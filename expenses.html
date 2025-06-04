@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expenses - OZON DETAILING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="images/transport.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        #logout-link {
+            color: #e74c3c;
+        }
+
+        #logout-link:hover {
+            background-color: #c0392b;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        main h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        main p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Message Area */
+        #message-area, #expense-modal-message-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .filter-controls .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-controls label {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            display: block;
+            color: #2c3e50;
+        }
+
+        .filter-controls input[type="date"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .filter-controls button {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        th, td {
+            border: 1px solid #eee;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        td.number {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        td.wrap {
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        td.action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Summary Section */
+        #expenses-summary {
+            background-color: #d4edda;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Buttons */
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .button-secondary:hover {
+            background-color: #6c757d;
+        }
+
+        .button-warning {
+            background-color: #f39c12;
+        }
+
+        .button-warning:hover {
+            background-color: #e67e22;
+        }
+
+        .button-danger {
+            background-color: #e74c3c;
+        }
+
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .button-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        #add-expense-btn {
+            background-color: #2ecc71;
+            margin-bottom: 1.5rem;
+        }
+
+        #add-expense-btn:hover {
+            background-color: #27ae60;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .modal-content label {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            display: block;
+            color: #2c3e50;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            header h1 a {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul li a {
+                padding: 0.5rem;
+                width: 100%;
+                text-align: left;
+            }
+
+            main {
+                margin: 1rem;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-controls .form-group {
+                min-width: 100%;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="dashboard.html">OZON DETAILING</a></h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="billing.html">Billing</a></li>
+                <li><a href="stock.html">Stock</a></li>
+                <li><a href="salary.html">Salaries</a></li>
+                <li><a href="expenses.html" class="active">Expenses</a></li>
+                <li><a href="view_bills.html">View Bills</a></li>
+                <li><a href="warrantypackage.html">Warranty Packages</a></li>
+                <li><a href="#" id="logout-link">Logout (<span id="logged-in-user"></span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="content-section">
+            <h2>Daily Expense Tracking</h2>
+            <div id="message-area"></div>
+            <button id="add-expense-btn" class="button">Add New Expense</button>
+            <div class="filter-controls">
+                <div class="form-group">
+                    <label for="filter_from_date">From:</label>
+                    <input type="date" id="filter_from_date" aria-label="Filter expenses from date">
+                </div>
+                <div class="form-group">
+                    <label for="filter_to_date">To:</label>
+                    <input type="date" id="filter_to_date" aria-label="Filter expenses to date">
+                </div>
+                <button id="filter_apply_btn" class="button"><i class="fas fa-filter"></i> Apply</button>
+                <button id="filter_today_btn" class="button button-secondary"><i class="fas fa-calendar-day"></i> Today</button>
+                <button id="filter_month_btn" class="button button-secondary"><i class="fas fa-calendar-alt"></i> Month</button>
+                <button id="filter_reset_btn" class="button button-secondary"><i class="fas fa-undo"></i> Reset</button>
+            </div>
+            <div id="expenses-summary">Calculating summary...</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th class="wrap">Description</th>
+                        <th>Category</th>
+                        <th class="number">Amount (₹)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="expenses-table-body">
+                    <tr><td colspan="5">Loading expenses...</td></tr>
+                </tbody>
+            </table>
+        </section>
+        <div id="expense-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeModal('expense-modal')">×</span>
+                <h3 id="expense-modal-title">Add Expense</h3>
+                <div id="expense-modal-message-area"></div>
+                <form id="expense-form">
+                    <input type="hidden" id="expense-id">
+                    <div class="form-group">
+                        <label for="expense-date">Date *:</label>
+                        <input type="date" id="expense-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-description">Description *:</label>
+                        <input type="text" id="expense-description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-category">Category:</label>
+                        <input type="text" id="expense-category" placeholder="e.g., Parts, Rent, Utilities, Wages">
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-amount">Amount (₹) *:</label>
+                        <input type="number" id="expense-amount" step="0.01" min="0.01" required>
+                    </div>
+                    <button type="submit" id="save-expense-btn" class="button">Save Expense</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('expense-modal')">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+
+    <script>
+        const LS_KEYS = { USERS: 'workshop_users', CURRENT_USER: 'workshop_currentUser', EXPENSES: 'workshop_expenses' };
+        function getData(key) {
+            const data = localStorage.getItem(key);
+            try { return data ? JSON.parse(data) : []; } catch (e) { console.error(`Error parsing LS key "${key}":`, e); return []; }
+        }
+        function setData(key, data) {
+            try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error(`Error setting LS key "${key}":`, e); }
+        }
+        function getCurrentUser() { return localStorage.getItem(LS_KEYS.CURRENT_USER); }
+        function setCurrentUser(email) {
+            if (email) { localStorage.setItem(LS_KEYS.CURRENT_USER, email); }
+            else { localStorage.removeItem(LS_KEYS.CURRENT_USER); }
+        }
+        function showMessage(type, message, areaId = 'message-area', persistent = false) {
+            const area = document.getElementById(areaId);
+            if (!area) return;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.innerHTML = message;
+            area.appendChild(messageDiv);
+            if (!persistent) { setTimeout(() => { messageDiv.remove(); }, 7000); }
+        }
+        function clearMessages(areaId = 'message-area') {
+            const area = document.getElementById(areaId);
+            if (area) { area.querySelectorAll('.message').forEach(msg => msg.remove()); }
+        }
+        function checkLogin() {
+            const user = getCurrentUser();
+            if (!user) {
+                const publicPages = ['login.html', 'signup.html', 'index.html', ''];
+                const currentPage = window.location.pathname.split('/').pop();
+                if (!publicPages.includes(currentPage)) { window.location.href = 'login.html'; }
+                return false;
+            }
+            const userDisplay = document.getElementById('logged-in-user');
+            if (userDisplay) userDisplay.textContent = user.split('@')[0];
+            return true;
+        }
+        function handleLogout() {
+            setCurrentUser(null);
+            window.location.href = 'login.html';
+        }
+        function generateId(prefix = '') {
+            return prefix + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+        }
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'flex';
+        }
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+            clearMessages(modalId + '-message-area');
+            const idField = modal.querySelector('input[type="hidden"]');
+            if (idField) idField.value = '';
+        }
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => { if (event.target == modal) { closeModal(modal.id); } });
+        }
+        function formatDateInput(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = ('0' + (d.getMonth() + 1)).slice(-2);
+            const day = ('0' + d.getDate()).slice(-2);
+            return `${year}-${month}-${day}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkLogin()) return;
+
+            const expensesTableBody = document.getElementById('expenses-table-body');
+            const addExpenseBtn = document.getElementById('add-expense-btn');
+            const expenseForm = document.getElementById('expense-form');
+            const expenseModalTitle = document.getElementById('expense-modal-title');
+            const expensesSummaryDiv = document.getElementById('expenses-summary');
+            const fromDateInput = document.getElementById('filter_from_date');
+            const toDateInput = document.getElementById('filter_to_date');
+            const applyBtn = document.getElementById('filter_apply_btn');
+            const todayBtn = document.getElementById('filter_today_btn');
+            const monthBtn = document.getElementById('filter_month_btn');
+            const resetBtn = document.getElementById('filter_reset_btn');
+
+            function displayExpenses(filterStartDate = null, filterEndDate = null) {
+                if (!expensesTableBody) return;
+                let expenses = getData(LS_KEYS.EXPENSES);
+                expensesTableBody.innerHTML = '';
+
+                let filteredExpenses = expenses;
+                if (filterStartDate || filterEndDate) {
+                    const start = filterStartDate ? new Date(filterStartDate) : null;
+                    if (start) start.setHours(0, 0, 0, 0);
+                    const end = filterEndDate ? new Date(filterEndDate) : null;
+                    if (end) end.setHours(23, 59, 59, 999);
+
+                    filteredExpenses = expenses.filter(expense => {
+                        if (!expense.date) return false;
+                        const expenseDate = new Date(expense.date);
+                        expenseDate.setHours(12, 0, 0, 0);
+                        const afterStart = start ? expenseDate >= start : true;
+                        const beforeEnd = end ? expenseDate <= end : true;
+                        return afterStart && beforeEnd;
+                    });
+                }
+
+                if (filteredExpenses.length === 0) {
+                    expensesTableBody.innerHTML = '<tr><td colspan="5">No expenses found matching criteria.</td></tr>';
+                    updateSummary(0, 0);
+                    return;
+                }
+
+                filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                let totalExpenses = 0;
+                let count = 0;
+
+                filteredExpenses.forEach(expense => {
+                    const row = expensesTableBody.insertRow();
+                    const amount = parseFloat(expense.amount || 0);
+                    totalExpenses += amount;
+                    count++;
+
+                    row.innerHTML = `
+                        <td>${expense.date ? new Date(expense.date).toLocaleDateString('en-IN') : 'N/A'}</td>
+                        <td class="wrap">${expense.description}</td>
+                        <td class="wrap">${expense.category || 'Uncategorized'}</td>
+                        <td class="number">${amount.toFixed(2)}</td>
+                        <td class="action-buttons">
+                            <button class="button button-warning button-small edit-expense-btn" data-id="${expense.id}"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="button button-danger button-small delete-expense-btn" data-id="${expense.id}"><i class="fas fa-trash"></i> Delete</button>
+                        </td>
+                    `;
+                });
+                attachExpenseActionListeners();
+                updateSummary(totalExpenses, count, !!(filterStartDate || filterEndDate));
+            }
+
+            function updateSummary(total, count, isFiltered = false) {
+                if (expensesSummaryDiv) {
+                    let summaryText = '';
+                    if (count > 0) {
+                        summaryText = `Total ${isFiltered ? 'Filtered ' : ''}Expenses: <strong>₹ ${total.toFixed(2)}</strong> across <strong>${count}</strong> entries.`;
+                    } else {
+                        summaryText = `No expenses recorded ${isFiltered ? 'matching criteria' : 'yet'}.`;
+                    }
+                    expensesSummaryDiv.innerHTML = summaryText;
+                }
+            }
+
+            function attachExpenseActionListeners() {
+                document.querySelectorAll('.edit-expense-btn').forEach(button => {
+                    button.removeEventListener('click', handleEditExpense);
+                    button.addEventListener('click', handleEditExpense);
+                });
+                document.querySelectorAll('.delete-expense-btn').forEach(button => {
+                    button.removeEventListener('click', handleDeleteExpense);
+                    button.addEventListener('click', handleDeleteExpense);
+                });
+            }
+
+            function handleEditExpense(event) {
+                const expenseId = event.target.getAttribute('data-id');
+                const expenses = getData(LS_KEYS.EXPENSES);
+                const expense = expenses.find(ex => ex.id === expenseId);
+                if (expense && expenseForm) {
+                    clearMessages('expense-modal-message-area');
+                    expenseModalTitle.textContent = 'Edit Expense';
+                    document.getElementById('expense-id').value = expense.id;
+                    document.getElementById('expense-date').value = expense.date;
+                    document.getElementById('expense-description').value = expense.description;
+                    document.getElementById('expense-category').value = expense.category || '';
+                    document.getElementById('expense-amount').value = expense.amount;
+                    openModal('expense-modal');
+                }
+            }
+
+            function handleDeleteExpense(event) {
+                const expenseId = event.target.getAttribute('data-id');
+                const expenses = getData(LS_KEYS.EXPENSES);
+                const expense = expenses.find(ex => ex.id === expenseId);
+                if (expense && confirm(`Are you sure you want to delete the expense: "${expense.description}"?`)) {
+                    let updatedExpenses = expenses.filter(ex => ex.id !== expenseId);
+                    setData(LS_KEYS.EXPENSES, updatedExpenses);
+                    showMessage('success', `Expense "${expense.description}" deleted successfully.`);
+                    displayExpenses(fromDateInput.value, toDateInput.value);
+                }
+            }
+
+            if (addExpenseBtn) {
+                addExpenseBtn.onclick = () => {
+                    if (expenseForm) expenseForm.reset();
+                    clearMessages('expense-modal-message-area');
+                    expenseModalTitle.textContent = 'Add Expense';
+                    document.getElementById('expense-id').value = '';
+                    const dateInput = document.getElementById('expense-date');
+                    if (dateInput) dateInput.valueAsDate = new Date();
+                    openModal('expense-modal');
+                };
+            }
+
+            if (expenseForm) {
+                expenseForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const expenseId = document.getElementById('expense-id').value;
+                    const date = document.getElementById('expense-date').value;
+                    const description = document.getElementById('expense-description').value.trim();
+                    const category = document.getElementById('expense-category').value.trim();
+                    const amount = parseFloat(document.getElementById('expense-amount').value);
+
+                    if (!date || !description || isNaN(amount) || amount <= 0) {
+                        showMessage('error', 'Please fill in Date, Description, and a valid Amount (> 0).', 'expense-modal-message-area');
+                        return;
+                    }
+
+                    let expenses = getData(LS_KEYS.EXPENSES);
+                    if (expenseId) {
+                        const index = expenses.findIndex(ex => ex.id === expenseId);
+                        if (index > -1) {
+                            expenses[index] = { ...expenses[index], date, description, category, amount };
+                            showMessage('success', `Expense "${description}" updated.`);
+                        }
+                    } else {
+                        const newExpense = { id: generateId('EXP'), date, description, category, amount };
+                        expenses.push(newExpense);
+                        showMessage('success', `Expense "${description}" added successfully.`);
+                    }
+
+                    setData(LS_KEYS.EXPENSES, expenses);
+                    closeModal('expense-modal');
+                    displayExpenses(fromDateInput.value, toDateInput.value);
+                });
+            }
+
+            if (applyBtn) { applyBtn.onclick = () => displayExpenses(fromDateInput.value, toDateInput.value); }
+            if (todayBtn) {
+                todayBtn.onclick = () => {
+                    const todayStr = formatDateInput(new Date());
+                    fromDateInput.value = todayStr;
+                    toDateInput.value = todayStr;
+                    displayExpenses(todayStr, todayStr);
+                };
+            }
+            if (monthBtn) {
+                monthBtn.onclick = () => {
+                    const today = new Date();
+                    const firstDay = formatDateInput(new Date(today.getFullYear(), today.getMonth(), 1));
+                    const lastDay = formatDateInput(new Date(today.getFullYear(), today.getMonth() + 1, 0));
+                    fromDateInput.value = firstDay;
+                    toDateInput.value = lastDay;
+                    displayExpenses(firstDay, lastDay);
+                };
+            }
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    fromDateInput.value = '';
+                    toDateInput.value = '';
+                    displayExpenses();
+                };
+            }
+
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+            }
+
+            displayExpenses();
+        });
+    </script>
+</body>
+</html>

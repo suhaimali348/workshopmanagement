@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Warranty Packages - Workshop Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="images/transport.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        #logout-link {
+            color: #e74c3c;
+        }
+
+        #logout-link:hover {
+            background-color: #c0392b;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-container, .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h2#form-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        #edit-mode-indicator {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            border: 1px solid #fde68a;
+        }
+
+        #edit-mode-indicator.hidden {
+            display: none;
+        }
+
+        #message-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .message-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        form#warranty-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input.invalid,
+        .form-group select.invalid,
+        .form-group textarea.invalid,
+        .form-group input:invalid:not(:focus):not([type="date"]),
+        .form-group select:invalid:not(:focus),
+        .form-group textarea:invalid:not(:focus) {
+            border-color: #e74c3c;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .button-secondary:hover {
+            background-color: #6c757d;
+        }
+
+        .button-danger {
+            background-color: #e74c3c;
+        }
+
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .button-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .button-success {
+            background-color: #28a745;
+        }
+
+        .button-success:hover {
+            background-color: #218838;
+        }
+
+        .final-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .search-sort {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-sort .form-group {
+            min-width: 150px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .modal-content p {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-content h4 {
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .modal-content ul {
+            list-style: none;
+            margin-bottom: 1rem;
+            padding-left: 0;
+        }
+
+        .modal-content ul li {
+            font-size: 0.9rem;
+            padding: 0.3rem 0;
+        }
+
+        .modal-content ul li p {
+            margin: 0.2rem 0 0.5rem 1rem;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            header h1 a {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul li a {
+                padding: 0.5rem;
+                width: 100%;
+                text-align: left;
+            }
+
+            main {
+                margin: 1rem;
+            }
+
+            .form-container, .table-container {
+                padding: 1.5rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-group {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .final-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .final-actions button {
+                width: 100%;
+            }
+
+            .search-sort {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-container, .table-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="dashboard.html">OZON DETAILING</a></h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="billing.html">Billing</a></li>
+                <li><a href="stock.html">Stock</a></li>
+                <li><a href="salary.html">Salaries</a></li>
+                <li><a href="expenses.html">Expenses</a></li>
+                <li><a href="view_bills.html">View Bills</a></li>
+                <li><a href="warrantypackage.html" class="active">Warranty Packages</a></li>
+                <li><a href="#" id="logout-link">Logout (<span id="logged-in-user"></span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="form-container">
+            <h2 id="form-title">Add Warranty Package</h2>
+            <div id="edit-mode-indicator" class="hidden">EDITING WARRANTY PACKAGE</div>
+            <div id="message-area"></div>
+            <form id="warranty-form">
+                <input type="hidden" id="editing-package-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="package_name">Package Name *:</label>
+                        <input type="text" id="package_name" name="package_name" required aria-required="true" placeholder="e.g., Premium Coating">
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration (Months) *:</label>
+                        <input type="number" id="duration" name="duration" min="1" required aria-required="true" placeholder="e.g., 12">
+                    </div>
+                    <div class="form-group">
+                        <label for="cost">Cost (₹) *:</label>
+                        <input type="number" id="cost" name="cost" step="0.01" min="0" required aria-required="true" placeholder="e.g., 5000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="allowed_visits">Allowed Visits *:</label>
+                        <input type="number" id="allowed_visits" name="allowed_visits" min="1" required aria-required="true" placeholder="e.g., 24">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_name">Customer Name *:</label>
+                        <input type="text" id="customer_name" name="customer_name" required aria-required="true" placeholder="e.g., John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_mobile">Mobile Number:</label>
+                        <input type="tel" id="customer_mobile" name="customer_mobile" placeholder="Optional" aria-label="Customer mobile number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="car_name">Car Name / Model *:</label>
+                        <input type="text" id="car_name" name="car_name" required aria-required="true" placeholder="e.g., Toyota Corolla">
+                    </div>
+                    <div class="form-group">
+                        <label for="number_plate">Number Plate *:</label>
+                        <input type="text" id="number_plate" name="number_plate" required aria-required="true" placeholder="e.g., ABC1234">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="issue_date">Issue Date *:</label>
+                        <input type="date" id="issue_date" name="issue_date" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="last_issue_date">Last Issue Date:</label>
+                        <input type="date" id="last_issue_date" name="last_issue_date" aria-label="Last issue date (optional)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="details">Package Details / Notes:</label>
+                    <textarea id="details" name="details" placeholder="e.g., Includes 24 car washes, free maintenance" aria-label="Package details"></textarea>
+                </div>
+                <div class="final-actions">
+                    <button type="submit" id="save-package-btn" class="button"><i class="fas fa-save"></i> Save Package</button>
+                    <button type="button" id="cancel-edit-btn" class="button button-danger hidden"><i class="fas fa-times"></i> Cancel Edit</button>
+                    <button type="reset" id="clear-form-btn" class="button button-secondary"><i class="fas fa-undo"></i> Clear Form</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2>Warranty Packages</h2>
+            <div class="search-sort">
+                <div class="form-group">
+                    <label for="search">Search:</label>
+                    <input type="text" id="search" placeholder="Search by customer, vehicle..." aria-label="Search warranty packages">
+                </div>
+                <div class="form-group">
+                    <label for="sort">Sort By:</label>
+                    <select id="sort" aria-label="Sort warranty packages">
+                        <option value="issue_date_desc">Issue Date (Newest)</option>
+                        <option value="issue_date_asc">Issue Date (Oldest)</option>
+                        <option value="customer_name">Customer Name</option>
+                        <option value="car_name">Car Name</option> 
+                        <option value="cost_desc">Cost (High to Low)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="button" onclick="exportData()">Export Data</button>
+                    <input type="file" id="import-file" accept=".json" style="display: none;">
+                    <button class="button" onclick="document.getElementById('import-file').click()">Import Data</button>
+                </div>
+            </div>
+            <table id="warranty-table">
+                <thead>
+                    <tr>
+                        <th>Package Name</th>
+                        <th>Customer</th>
+                        <th>Vehicle</th>
+                        <th>Number Plate</th>
+                        <th>Issue Date</th>
+                        <th>Last Issue</th>
+                        <th>Duration</th>
+                        <th>Visits</th>
+                        <th>Cost (₹)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="warranty-table-body"></tbody>
+            </table>
+        </div>
+
+        <div id="warranty-details-modal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('warranty-details-modal')" aria-label="Close modal">×</button>
+                <h3>Warranty Package Details</h3>
+                <p><strong>Package ID:</strong> <span id="modal-package-id"></span></p>
+                <p><strong>Package Name:</strong> <span id="modal-package-name"></span></p>
+                <p><strong>Duration:</strong> <span id="modal-duration"></span> months</p>
+                <p><strong>Allowed Visits:</strong> <span id="modal-allowed-visits"></span></p>
+                <p><strong>Visits Used:</strong> <span id="modal-visits-used"></span></p>
+                <p><strong>Visits Remaining:</strong> <span id="modal-visits-remaining"></span></p>
+                <p><strong>Cost:</strong> ₹<span id="modal-cost"></span></p>
+                <p><strong>Customer Name:</strong> <span id="modal-customer-name"></span></p>
+                <p><strong>Customer Mobile:</strong> <span id="modal-customer-mobile"></span></p>
+                <p><strong>Car Name:</strong> <span id="modal-car-name"></span></p>
+                <p><strong>Number Plate:</strong> <span id="modal-number-plate"></span></p>
+                <p><strong>Issue Date:</strong> <span id="modal-issue-date"></span></p>
+                <p><strong>Last Issue Date:</strong> <span id="modal-last-issue-date"></span></p>
+                <p><strong>Expiry Date:</strong> <span id="modal-expiry-date"></span></p>
+                <p><strong>Details:</strong> <span id="modal-details"></span></p>
+                <h4>Visit History</h4>
+                <ul id="modal-visit-history"></ul>
+                <div class="modal-actions">
+                    <button type="button" id="modal-record-visit-btn" class="button button-success" onclick="openRecordVisitModal()" aria-label="Record a visit"><i class="fas fa-plus"></i> Record Visit</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('warranty-details-modal')"><i class="fas fa-times"></i> Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="record-visit-modal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('record-visit-modal')" aria-label="Close modal">×</button>
+                <h3>Record Visit</h3>
+                <form id="record-visit-form">
+                    <input type="hidden" id="visit-package-id">
+                    <div class="form-group">
+                        <label for="visit_date">Visit Date *:</label>
+                        <input type="date" id="visit_date" name="visit_date" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="visit_details">Visit Details:</label>
+                        <textarea id="visit_details" name="visit_details" maxlength="500" placeholder="e.g., Car wash, interior cleaning" aria-label="Visit details (optional)"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="button button-success"><i class="fas fa-save"></i> Save Visit</button>
+                        <button type="button" class="button button-secondary" onclick="closeModal('record-visit-modal')"><i class="fas fa-times"></i> Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+
+    <script>
+        console.log("Script execution started.");
+
+        const DB_NAME = 'WorkshopDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'warranties';
+        const LS_KEYS = { 
+            USERS: 'workshop_users', 
+            CURRENT_USER: 'workshop_currentUser', 
+            STOCK: 'workshop_stock', 
+            BILLS: 'workshop_bills', 
+            WARRANTIES: 'workshop_warranties' 
+        };
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'packageId' });
+                    }
+                };
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => reject(event.target.error);
+            });
+        }
+
+        async function getWarranties() {
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                    db.close();
+                });
+            } catch (error) {
+                console.error('Error fetching warranties:', error);
+                return [];
+            }
+        }
+
+        async function saveWarranty(warranty) {
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.put(warranty);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                    transaction.oncomplete = () => db.close();
+                });
+            } catch (error) {
+                console.error('Error saving warranty:', error);
+                throw error;
+            }
+        }
+
+        async function deleteWarrantyById(packageId) {
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.delete(packageId);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                    transaction.oncomplete = () => db.close();
+                });
+            } catch (error) {
+                console.error('Error deleting warranty:', error);
+                throw error;
+            }
+        }
+
+        async function getWarrantyById(packageId) {
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get(packageId);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                    db.close();
+                });
+            } catch (error) {
+                console.error('Error fetching warranty:', error);
+                return null;
+            }
+        }
+
+        function validateWarrantyData(warranty) {
+            const requiredFields = ['packageId', 'packageName', 'duration', 'cost', 'allowedVisits', 'customerName', 'carName', 'numberPlate', 'issueDate'];
+            return requiredFields.every(field => warranty[field] !== undefined && warranty[field] !== '');
+        }
+
+        async function migrateLocalStorageToIndexedDB() {
+            const localData = localStorage.getItem(LS_KEYS.WARRANTIES);
+            if (!localData) return;
+            try {
+                const warranties = JSON.parse(localData);
+                if (!Array.isArray(warranties)) return;
+                const validWarranties = warranties.filter(warranty => validateWarrantyData(warranty));
+                for (const warranty of validWarranties) {
+                    if (warranty.visitHistory && warranty.visitHistory.length > 0 && typeof warranty.visitHistory[0] === 'string') {
+                        warranty.visitHistory = warranty.visitHistory.map(dateStr => ({ date: dateStr, details: '' }));
+                    }
+                    await saveWarranty(warranty);
+                }
+                if (validWarranties.length > 0) {
+                    localStorage.removeItem(LS_KEYS.WARRANTIES);
+                    showMessage('success', `Migrated ${validWarranties.length} warranties to new storage system.`, 'message-area');
+                }
+            } catch (error) {
+                console.error('Error migrating localStorage data:', error);
+                showMessage('error', 'Failed to migrate some data. Please import your backup.', 'message-area');
+            }
+        }
+
+        function showMessage(type, message, areaId = 'message-area', persistent = false) { 
+            const area = document.getElementById(areaId); 
+            if (!area) {
+                console.error("Message area not found:", areaId);
+                return;
+            }
+            const messageDiv = document.createElement('div'); 
+            messageDiv.className = `message message-${type}`; 
+            messageDiv.innerHTML = message; 
+            area.appendChild(messageDiv); 
+            if (!persistent) { 
+                setTimeout(() => { messageDiv.remove(); }, 5000); 
+            } 
+        }
+
+        function clearMessages(areaId = 'message-area') { 
+            const area = document.getElementById(areaId); 
+            if (area) { area.querySelectorAll('.message').forEach(msg => msg.remove()); } 
+        }
+
+        function checkLogin() { 
+            console.log("checkLogin CALLED");
+            const user = getCurrentUser(); 
+            if (!user) { 
+                console.log("User not logged in. Checking if page is public.");
+                const publicPages = ['login.html', 'signup.html', 'index.html', '']; 
+                const currentPage = window.location.pathname.split('/').pop(); 
+                if (!publicPages.includes(currentPage)) { 
+                    console.log("Redirecting to login.html from", currentPage);
+                    window.location.href = 'login.html'; 
+                } 
+                return false; 
+            } 
+            const userDisplay = document.getElementById('logged-in-user'); 
+            if (userDisplay) userDisplay.textContent = user.split('@')[0]; 
+            console.log("User is logged in:", user);
+            return true; 
+        }
+
+        function getCurrentUser() { 
+            return localStorage.getItem(LS_KEYS.CURRENT_USER); 
+        }
+
+        function setCurrentUser(email) { 
+            if (email) { localStorage.setItem(LS_KEYS.CURRENT_USER, email); } 
+            else { localStorage.removeItem(LS_KEYS.CURRENT_USER); } 
+        }
+
+        function handleLogout() { 
+            console.log("handleLogout CALLED");
+            setCurrentUser(null); 
+            window.location.href = 'login.html'; 
+        }
+
+        function generateId(prefix = '') { 
+            return prefix + Date.now().toString(36) + Math.random().toString(36).substring(2, 8); 
+        }
+
+        function openModal(modalId) {
+            console.log("openModal CALLED for", modalId);
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+                const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focusableElements.length > 0) {
+                    let elementToFocus = Array.from(focusableElements).find(el => el.classList.contains('modal-close') || (el.tagName === 'BUTTON' && !el.disabled && !el.classList.contains('button-secondary')));
+                    if (!elementToFocus) elementToFocus = Array.from(focusableElements).find(el => el.classList.contains('modal-close'));
+                    if (!elementToFocus) elementToFocus = Array.from(focusableElements).find(el => el.tagName === 'BUTTON' && !el.disabled);
+                    if (!elementToFocus && focusableElements[0]) elementToFocus = focusableElements[0];
+                    if (elementToFocus) elementToFocus.focus();
+                }
+            }
+        }
+
+        function closeModal(modalId) {
+            console.log("closeModal CALLED for", modalId);
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => { if (event.target == modal) { closeModal(modal.id); } });
+        };
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                const openModals = document.querySelectorAll('.modal');
+                openModals.forEach(modal => {
+                    if (modal.style.display === 'flex') {
+                        closeModal(modal.id);
+                    }
+                });
+            }
+        });
+
+        async function exportData() {
+            try {
+                const warranties = await getWarranties();
+                const dataStr = JSON.stringify(warranties, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `warranties_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showMessage('success', 'Warranty data exported successfully.', 'message-area');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showMessage('error', 'Failed to export data.', 'message-area');
+            }
+        }
+
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const warranties = JSON.parse(e.target.result);
+                        if (!Array.isArray(warranties)) throw new Error('Invalid data format');
+                        const validWarranties = warranties.filter(warranty => validateWarrantyData(warranty));
+                        for (const warranty of validWarranties) {
+                            if (warranty.visitHistory && warranty.visitHistory.length > 0 && typeof warranty.visitHistory[0] === 'string') {
+                                warranty.visitHistory = warranty.visitHistory.map(dateStr => ({ date: dateStr, details: '' }));
+                            }
+                            await saveWarranty(warranty);
+                        }
+                        showMessage('success', `Imported ${validWarranties.length} valid warranties.`, 'message-area');
+                        handleSearchAndSort();
+                    } catch (error) {
+                        console.error('Error importing data:', error);
+                        showMessage('error', 'Failed to import data. Ensure the file is valid JSON.', 'message-area');
+                    }
+                    event.target.value = '';
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOMContentLoaded event fired.");
+
+            if (!checkLogin()) {
+                console.log("Login check failed, aborting further script setup in DOMContentLoaded.");
+                return;
+            }
+            console.log("Login check passed, proceeding with DOMContentLoaded setup.");
+
+            await migrateLocalStorageToIndexedDB();
+
+            const warrantyForm = document.getElementById('warranty-form');
+            const recordVisitForm = document.getElementById('record-visit-form');
+            const warrantyTableBody = document.getElementById('warranty-table-body');
+            const searchInput = document.getElementById('search');
+            const sortSelect = document.getElementById('sort');
+            const logoutLink = document.getElementById('logout-link');
+            const editingPackageIdInput = document.getElementById('editing-package-id');
+            const formTitle = document.getElementById('form-title');
+            const editModeIndicator = document.getElementById('edit-mode-indicator');
+            const savePackageBtn = document.getElementById('save-package-btn');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            const pageTitleElement = document.getElementById('page-title');
+
+            console.log({warrantyForm, recordVisitForm, cancelEditBtn, savePackageBtn});
+
+            async function displayWarranties(warrantiesToDisplay) {
+                console.log("displayWarranties CALLED");
+                if (!warrantyTableBody) return;
+                warrantyTableBody.innerHTML = '';
+                if (!warrantiesToDisplay || warrantiesToDisplay.length === 0) {
+                    warrantyTableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No warranty packages found.</td></tr>';
+                    return;
+                }
+                warrantiesToDisplay.forEach(warranty => {
+                    const visitsUsed = warranty.visitHistory ? warranty.visitHistory.length : 0;
+                    const visitsRemaining = warranty.allowedVisits - visitsUsed;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${warranty.packageName}</td>
+                        <td>${warranty.customerName}</td>
+                        <td>${warranty.carName}</td>
+                        <td>${warranty.numberPlate}</td>
+                        <td>${new Date(warranty.issueDate).toLocaleDateString('en-IN')}</td>
+                        <td>${warranty.lastIssueDate ? new Date(warranty.lastIssueDate).toLocaleDateString('en-IN') : 'N/A'}</td>
+                        <td>${warranty.duration}</td>
+                        <td>${visitsUsed}/${warranty.allowedVisits}</td>
+                        <td>${parseFloat(warranty.cost).toFixed(2)}</td>
+                        <td>
+                            <button class="button button-small" onclick="viewWarrantyDetails('${warranty.packageId}')" aria-label="View details for ${warranty.packageName}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="button button-small button-secondary" onclick="editWarranty('${warranty.packageId}')" aria-label="Edit ${warranty.packageName}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="button button-small button-success" onclick="openRecordVisitModalWrapper('${warranty.packageId}')" aria-label="Record visit for ${warranty.packageName}" ${visitsRemaining <= 0 ? 'disabled' : ''}>
+                                <i class="fas fa-plus"></i> Visit
+                            </button>
+                            <button class="button button-small button-danger" onclick="deleteWarranty('${warranty.packageId}')" aria-label="Delete ${warranty.packageName}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>`;
+                    warrantyTableBody.appendChild(row);
+                });
+            }
+
+            async function handleSearchAndSort() {
+                console.log("handleSearchAndSort CALLED");
+                let warranties = await getWarranties();
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    warranties = warranties.filter(warranty => 
+                        (warranty.customerName || '').toLowerCase().includes(searchTerm) ||
+                        (warranty.carName || '').toLowerCase().includes(searchTerm) ||
+                        (warranty.numberPlate || '').toLowerCase().includes(searchTerm) ||
+                        (warranty.packageName || '').toLowerCase().includes(searchTerm)
+                    );
+                }
+                const sortValue = sortSelect.value;
+                warranties.sort((a, b) => {
+                    if (sortValue === 'issue_date_desc') {
+                        return new Date(b.issueDate) - new Date(a.issueDate);
+                    } else if (sortValue === 'issue_date_asc') {
+                        return new Date(a.issueDate) - new Date(b.issueDate);
+                    } else if (sortValue === 'customer_name') {
+                        return (a.customerName || "").localeCompare(b.customerName || "");
+                    } else if (sortValue === 'car_name') { 
+                        return (a.carName || "").localeCompare(b.carName || "");
+                    } else if (sortValue === 'cost_desc') {
+                        return parseFloat(b.cost) - parseFloat(a.cost);
+                    }
+                    return 0;
+                });
+                await displayWarranties(warranties);
+            }
+
+            window.viewWarrantyDetails = async function(packageId) {
+                console.log("viewWarrantyDetails CALLED for", packageId);
+                let warranty = await getWarrantyById(packageId);
+                if (!warranty) {
+                    showMessage('error', 'Warranty package not found.');
+                    return;
+                }
+                if (warranty.visitHistory && warranty.visitHistory.length > 0 && typeof warranty.visitHistory[0] === 'string') {
+                    warranty.visitHistory = warranty.visitHistory.map(dateStr => ({ date: dateStr, details: '' }));
+                    await saveWarranty(warranty);
+                } else if (!warranty.visitHistory) {
+                    warranty.visitHistory = [];
+                }
+                const visitsUsed = warranty.visitHistory.length;
+                document.getElementById('modal-package-id').textContent = warranty.packageId;
+                document.getElementById('modal-package-name').textContent = warranty.packageName;
+                document.getElementById('modal-duration').textContent = warranty.duration;
+                document.getElementById('modal-allowed-visits').textContent = warranty.allowedVisits;
+                document.getElementById('modal-visits-used').textContent = visitsUsed;
+                document.getElementById('modal-visits-remaining').textContent = warranty.allowedVisits - visitsUsed;
+                document.getElementById('modal-cost').textContent = parseFloat(warranty.cost).toFixed(2);
+                document.getElementById('modal-customer-name').textContent = warranty.customerName;
+                document.getElementById('modal-customer-mobile').textContent = warranty.customerMobile || 'N/A';
+                document.getElementById('modal-car-name').textContent = warranty.carName;
+                document.getElementById('modal-number-plate').textContent = warranty.numberPlate;
+                document.getElementById('modal-issue-date').textContent = new Date(warranty.issueDate).toLocaleDateString('en-IN');
+                document.getElementById('modal-last-issue-date').textContent = warranty.lastIssueDate ? new Date(warranty.lastIssueDate).toLocaleDateString('en-IN') : 'N/A';
+                const issueDateObj = new Date(warranty.issueDate);
+                const expiryDate = new Date(issueDateObj.getFullYear(), issueDateObj.getMonth() + parseInt(warranty.duration), issueDateObj.getDate());
+                document.getElementById('modal-expiry-date').textContent = expiryDate.toLocaleDateString('en-IN');
+                document.getElementById('modal-details').textContent = warranty.details || 'None';
+                const visitHistoryUl = document.getElementById('modal-visit-history');
+                visitHistoryUl.innerHTML = '';
+                if (warranty.visitHistory.length > 0) {
+                    warranty.visitHistory.forEach(visit => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${new Date(visit.date).toLocaleDateString('en-IN')}</strong>`;
+                        if (visit.details) {
+                            const detailsP = document.createElement('p');
+                            detailsP.textContent = visit.details;
+                            li.appendChild(detailsP);
+                        }
+                        visitHistoryUl.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No visits recorded.';
+                    visitHistoryUl.appendChild(li);
+                }
+                const recordVisitBtn = document.getElementById('modal-record-visit-btn');
+                recordVisitBtn.disabled = (warranty.allowedVisits - visitsUsed <= 0);
+                recordVisitBtn.onclick = () => openRecordVisitModalWrapper(warranty.packageId);
+                openModal('warranty-details-modal');
+            };
+
+            window.editWarranty = async function(packageId) {
+                console.log("editWarranty CALLED for", packageId);
+                const warranty = await getWarrantyById(packageId);
+                if (!warranty) {
+                    showMessage('error', 'Warranty package not found.');
+                    return;
+                }
+                editingPackageIdInput.value = warranty.packageId;
+                formTitle.textContent = `Edit Warranty Package (ID: ${warranty.packageId})`;
+                pageTitleElement.textContent = `Edit Warranty Package ${warranty.packageName} - Workshop Management System`;
+                editModeIndicator.classList.remove('hidden');
+                savePackageBtn.innerHTML = '<i class="fas fa-save"></i> Update Package';
+                cancelEditBtn.classList.remove('hidden');
+                
+                document.getElementById('package_name').value = warranty.packageName;
+                document.getElementById('duration').value = warranty.duration;
+                document.getElementById('allowed_visits').value = warranty.allowedVisits;
+                document.getElementById('cost').value = warranty.cost;
+                document.getElementById('customer_name').value = warranty.customerName;
+                document.getElementById('customer_mobile').value = warranty.customerMobile || '';
+                document.getElementById('car_name').value = warranty.carName;
+                document.getElementById('number_plate').value = warranty.numberPlate;
+                document.getElementById('issue_date').value = warranty.issueDate; 
+                document.getElementById('last_issue_date').value = warranty.lastIssueDate || ''; 
+                document.getElementById('details').value = warranty.details || '';
+                
+                Array.from(warrantyForm.elements).forEach(el => el.classList.remove('invalid'));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('package_name').focus();
+            };
+            
+            window.openRecordVisitModalWrapper = function(packageId) {
+                console.log("openRecordVisitModalWrapper CALLED for", packageId);
+                _openRecordVisitModal(packageId);
+            }
+
+            async function _openRecordVisitModal(packageId) {
+                console.log("_openRecordVisitModal (internal) CALLED for", packageId);
+                const warranty = await getWarrantyById(packageId);
+                if (!warranty) {
+                    showMessage('error', 'Cannot record visit: Warranty package not found.', 'message-area');
+                    return;
+                }
+                const visitsUsed = warranty.visitHistory ? warranty.visitHistory.length : 0;
+                if (visitsUsed >= warranty.allowedVisits) {
+                    showMessage('error', `Cannot record visit: Maximum visits (${warranty.allowedVisits}) already used for ${warranty.packageName}.`, 'message-area');
+                    return;
+                }
+                const visitPackageIdInput = document.getElementById('visit-package-id');
+                const visitDateInput = document.getElementById('visit_date');
+                const visitDetailsInput = document.getElementById('visit_details');
+                visitPackageIdInput.value = packageId; 
+                visitDateInput.valueAsDate = new Date();
+                visitDetailsInput.value = '';
+                Array.from(recordVisitForm.elements).forEach(el => el.classList.remove('invalid'));
+                closeModal('warranty-details-modal'); 
+                openModal('record-visit-modal');
+                visitDateInput.focus();
+            };
+
+            window.deleteWarranty = async function(packageId) {
+                console.log("deleteWarranty CALLED for", packageId);
+                const warranty = await getWarrantyById(packageId);
+                if (!warranty) {
+                    showMessage('error', 'Warranty package not found for deletion.');
+                    return;
+                }
+                if (!confirm(`Are you sure you want to delete the warranty package "${warranty.packageName}" for ${warranty.customerName}? This action cannot be undone.`)) {
+                    return;
+                }
+                try {
+                    await deleteWarrantyById(packageId);
+                    showMessage('success', `Warranty package "${warranty.packageName}" deleted successfully.`);
+                    if (editingPackageIdInput.value === packageId) { 
+                        switchToAddNewModeAndResetForm();
+                    }
+                    handleSearchAndSort();
+                } catch (error) {
+                    showMessage('error', 'Failed to delete warranty package.');
+                }
+            };
+            
+            function _performActualFormResetAndSetDefaults() {
+                console.log("_performActualFormResetAndSetDefaults CALLED");
+                document.getElementById('package_name').value = '';
+                document.getElementById('duration').value = '';
+                document.getElementById('cost').value = '';
+                document.getElementById('allowed_visits').value = 24;
+                document.getElementById('customer_name').value = '';
+                document.getElementById('customer_mobile').value = '';
+                document.getElementById('car_name').value = '';
+                document.getElementById('number_plate').value = '';
+                document.getElementById('issue_date').valueAsDate = new Date();
+                document.getElementById('last_issue_date').value = '';
+                document.getElementById('details').value = '';
+                
+                Array.from(warrantyForm.elements).forEach(el => el.classList.remove('invalid'));
+                document.getElementById('package_name').focus();
+            }
+
+            function switchToAddNewModeAndResetForm() {
+                console.log("switchToAddNewModeAndResetForm CALLED");
+                editingPackageIdInput.value = '';
+                formTitle.textContent = 'Add Warranty Package';
+                pageTitleElement.textContent = 'Warranty Packages - Workshop Management System';
+                editModeIndicator.classList.add('hidden');
+                savePackageBtn.innerHTML = '<i class="fas fa-save"></i> Save Package';
+                cancelEditBtn.classList.add('hidden');
+                _performActualFormResetAndSetDefaults();
+                clearMessages();
+            }
+
+            if (warrantyForm) {
+                warrantyForm.addEventListener('submit', async (e) => {
+                    console.log("Warranty form SUBMITTED");
+                    e.preventDefault();
+                    clearMessages();
+                    Array.from(warrantyForm.elements).forEach(el => el.classList.remove('invalid'));
+
+                    if (!warrantyForm.checkValidity()) {
+                        showMessage('error', 'Please fill all required fields (*).');
+                        const firstInvalid = warrantyForm.querySelector(':invalid');
+                        if (firstInvalid) {
+                            firstInvalid.classList.add('invalid');
+                            firstInvalid.focus();
+                        }
+                        return;
+                    }
+                    const cost = parseFloat(document.getElementById('cost').value);
+                    if (cost < 0) {
+                        showMessage('error', 'Cost cannot be negative.');
+                        document.getElementById('cost').classList.add('invalid'); document.getElementById('cost').focus(); return;
+                    }
+                    const duration = parseInt(document.getElementById('duration').value);
+                    if (duration <= 0) {
+                        showMessage('error', 'Duration must be a positive number of months.');
+                        document.getElementById('duration').classList.add('invalid'); document.getElementById('duration').focus(); return;
+                    }
+                    const allowedVisits = parseInt(document.getElementById('allowed_visits').value);
+                    if (allowedVisits <= 0) {
+                        showMessage('error', 'Allowed visits must be a positive number.');
+                        document.getElementById('allowed_visits').classList.add('invalid'); document.getElementById('allowed_visits').focus(); return;
+                    }
+                    const currentEditingId = editingPackageIdInput.value;
+                    if (currentEditingId) {
+                        const existingWarranty = await getWarrantyById(currentEditingId);
+                        const visitsUsed = existingWarranty && existingWarranty.visitHistory ? existingWarranty.visitHistory.length : 0;
+                        if (allowedVisits < visitsUsed) {
+                            showMessage('error', `Allowed visits (${allowedVisits}) cannot be less than already used visits (${visitsUsed}).`);
+                            document.getElementById('allowed_visits').classList.add('invalid'); document.getElementById('allowed_visits').focus(); return;
+                        }
+                    }
+                    const issueDateStr = document.getElementById('issue_date').value;
+                    const lastIssueDateStr = document.getElementById('last_issue_date').value;
+                    const today = new Date().toISOString().split('T')[0];
+                    if (lastIssueDateStr && lastIssueDateStr > today) {
+                        showMessage('error', 'Last Issue Date cannot be in the future.');
+                        document.getElementById('last_issue_date').classList.add('invalid'); document.getElementById('last_issue_date').focus(); return;
+                    }
+                    if (lastIssueDateStr && issueDateStr && lastIssueDateStr > issueDateStr) {
+                        showMessage('error', 'Last Issue Date cannot be after the current Issue Date.');
+                        document.getElementById('last_issue_date').classList.add('invalid'); document.getElementById('last_issue_date').focus(); return;
+                    }
+                    const existingPackage = currentEditingId ? await getWarrantyById(currentEditingId) : null;
+                    const warrantyData = {
+                        packageId: currentEditingId || generateId('W'),
+                        packageName: document.getElementById('package_name').value.trim(),
+                        duration: duration, allowedVisits: allowedVisits,
+                        visitHistory: existingPackage ? (existingPackage.visitHistory || []) : [],
+                        cost: cost, customerName: document.getElementById('customer_name').value.trim(),
+                        customerMobile: document.getElementById('customer_mobile').value.trim(),
+                        carName: document.getElementById('car_name').value.trim(),
+                        numberPlate: document.getElementById('number_plate').value.trim().toUpperCase(),
+                        issueDate: issueDateStr, lastIssueDate: lastIssueDateStr || null,
+                        details: document.getElementById('details').value.trim(),
+                        createdAt: existingPackage ? existingPackage.createdAt : new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    try {
+                        await saveWarranty(warrantyData);
+                        if (currentEditingId) {
+                            showMessage('success', `Warranty package "${warrantyData.packageName}" updated successfully!`);
+                            switchToAddNewModeAndResetForm();
+                        } else {
+                            showMessage('success', `Warranty package "${warrantyData.packageName}" for ${warrantyData.customerName} added successfully!`);
+                            _performActualFormResetAndSetDefaults();
+                        }
+                        handleSearchAndSort();
+                    } catch (error) {
+                        showMessage('error', 'Failed to save warranty package.');
+                    }
+                });
+
+                warrantyForm.addEventListener('reset', async (e) => {
+                    console.log("Warranty form RESET event triggered (by 'Clear Form' button).");
+                    e.preventDefault();
+                    clearMessages();
+                    Array.from(warrantyForm.elements).forEach(el => el.classList.remove('invalid'));
+
+                    if (editingPackageIdInput.value) {
+                        console.log("Resetting form to original data for editing package ID:", editingPackageIdInput.value);
+                        const warranty = await getWarrantyById(editingPackageIdInput.value);
+                        if (warranty) {
+                            document.getElementById('package_name').value = warranty.packageName;
+                            document.getElementById('duration').value = warranty.duration;
+                            document.getElementById('allowed_visits').value = warranty.allowedVisits;
+                            document.getElementById('cost').value = warranty.cost;
+                            document.getElementById('customer_name').value = warranty.customerName;
+                            document.getElementById('customer_mobile').value = warranty.customerMobile || '';
+                            document.getElementById('car_name').value = warranty.carName;
+                            document.getElementById('number_plate').value = warranty.numberPlate;
+                            document.getElementById('issue_date').value = warranty.issueDate;
+                            document.getElementById('last_issue_date').value = warranty.lastIssueDate || '';
+                            document.getElementById('details').value = warranty.details || '';
+                            document.getElementById('package_name').focus();
+                            showMessage('info', 'Form reset to current editing package data.');
+                        } else {
+                            console.warn("Original edit data not found during reset, switching to add new mode.");
+                            switchToAddNewModeAndResetForm();
+                            showMessage('warning', 'Original edit data not found. Form reset to add new.');
+                        }
+                    } else {
+                        console.log("Resetting form to defaults (not in edit mode).");
+                        _performActualFormResetAndSetDefaults();
+                        showMessage('info', 'Form cleared.');
+                    }
+                });
+            } else {
+                console.error("warrantyForm not found!");
+            }
+
+            if (recordVisitForm) {
+                recordVisitForm.addEventListener('submit', async (e) => {
+                    console.log("Record Visit form SUBMITTED");
+                    e.preventDefault();
+                    clearMessages('message-area'); 
+                    Array.from(recordVisitForm.elements).forEach(el => el.classList.remove('invalid'));
+                    if (!recordVisitForm.checkValidity()) {
+                        showMessage('error', 'Please select a valid visit date.', 'message-area');
+                        const firstInvalid = recordVisitForm.querySelector(':invalid');
+                        if (firstInvalid) { firstInvalid.classList.add('invalid'); firstInvalid.focus(); }
+                        return;
+                    }
+                    const packageId = document.getElementById('visit-package-id').value;
+                    const visitDateStr = document.getElementById('visit_date').value;
+                    const visitDetails = document.getElementById('visit_details').value.trim();
+                    const today = new Date().toISOString().split('T')[0];
+                    if (visitDateStr > today) {
+                        showMessage('error', 'Visit date cannot be in the future.', 'message-area');
+                        document.getElementById('visit_date').classList.add('invalid'); document.getElementById('visit_date').focus(); return;
+                    }
+                    let warranty = await getWarrantyById(packageId);
+                    if (!warranty) {
+                        showMessage('error', 'Warranty package not found for recording visit.', 'message-area');
+                        closeModal('record-visit-modal'); return;
+                    }
+                    if (!warranty.visitHistory || (warranty.visitHistory.length > 0 && typeof warranty.visitHistory[0] === 'string')) {
+                        warranty.visitHistory = (warranty.visitHistory || []).map(dateStr => ({ date: dateStr, details: '' }));
+                    }
+                    const visitsUsed = warranty.visitHistory.length;
+                    if (visitsUsed >= warranty.allowedVisits) {
+                        showMessage('error', 'Maximum visits already reached for this warranty.', 'message-area');
+                        closeModal('record-visit-modal'); return;
+                    }
+                    const issueDateObj = new Date(warranty.issueDate);
+                    const expiryDateObj = new Date(issueDateObj.getFullYear(), issueDateObj.getMonth() + parseInt(warranty.duration), issueDateObj.getDate());
+                    const visitDateObj = new Date(visitDateStr);
+                    if (visitDateObj < new Date(warranty.issueDate.split('T')[0]) || visitDateObj > expiryDateObj) {
+                        showMessage('error', `Visit date must be within the warranty period (${new Date(warranty.issueDate).toLocaleDateString('en-IN')} - ${expiryDateObj.toLocaleDateString('en-IN')}).`, 'message-area');
+                        document.getElementById('visit_date').classList.add('invalid'); document.getElementById('visit_date').focus(); return;
+                    }
+                    warranty.visitHistory.push({ date: visitDateStr, details: visitDetails });
+                    warranty.updatedAt = new Date().toISOString();
+                    await saveWarranty(warranty);
+                    showMessage('success', `Visit recorded successfully for ${warranty.packageName}.`, 'message-area');
+                    closeModal('record-visit-modal');
+                    await handleSearchAndSort();
+                    const detailsModal = document.getElementById('warranty-details-modal');
+                    if (detailsModal.style.display === 'flex' && document.getElementById('modal-package-id').textContent === packageId) {
+                        viewWarrantyDetails(packageId);
+                    }
+                });
+            } else {
+                console.error("recordVisitForm not found!");
+            }
+
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', () => {
+                    console.log("Cancel Edit Button CLICKED.");
+                    switchToAddNewModeAndResetForm();
+                });
+            } else {
+                console.error("cancelEditBtn not found!");
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', handleSearchAndSort);
+            }
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', handleSearchAndSort);
+            }
+
+            if (logoutLink) { 
+                logoutLink.addEventListener('click', (e) => { 
+                    e.preventDefault(); 
+                    handleLogout(); 
+                }); 
+            }
+
+            if (document.getElementById('import-file')) {
+                document.getElementById('import-file').addEventListener('change', importData);
+            }
+
+            console.log("Performing initial setup: switchToAddNewModeAndResetForm and handleSearchAndSort.");
+            switchToAddNewModeAndResetForm(); 
+            handleSearchAndSort(); 
+
+            console.log("DOMContentLoaded setup complete.");
+        });
+        console.log("Script execution finished.");
+    </script>
+</body>
+</html>

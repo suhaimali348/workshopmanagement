@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activate Product - OZON DETAILING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="images/transport.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .activation-section {
+            background: white;
+            border-radius: 8px;
+            padding: 3rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .activation-icon {
+            font-size: 3rem;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+
+        .activation-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .activation-section p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        .activation-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .activation-form input {
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .activation-form .button {
+            padding: 0.75rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .activation-form .button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .contact-info {
+            font-size: 1rem;
+            color: #3498db;
+            margin-top: 1rem;
+        }
+
+        .contact-info a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            header h1 a {
+                font-size: 1.5rem;
+            }
+
+            main {
+                margin: 1rem;
+            }
+
+            .activation-section {
+                padding: 2rem;
+            }
+
+            .activation-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .activation-section p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .activation-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="index.html">OZON DETAILING</a></h1>
+    </header>
+
+    <main>
+        <section class="activation-section">
+            <i class="fas fa-key activation-icon"></i>
+            <h2>Activate Your Product</h2>
+            <p>Your trial period has expired. Please enter your product key to continue using OZON DETAILING.</p>
+            <p class="contact-info">To obtain a product key, please contact us at <a href="tel:+918891479505">8891479505</a>.</p>
+            <div class="activation-form">
+                <input type="text" id="product-key" placeholder="Enter product key" required>
+                <button class="button" onclick="validateKey()">Activate</button>
+                <p class="error-message" id="error-message">Invalid product key. Please contact support.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+
+    <script>
+        function validateKey() {
+            const productKey = document.getElementById('product-key').value;
+            const errorMessage = document.getElementById('error-message');
+
+            // Obfuscated validation: Check if the input matches the expected key
+            // Instead of hardcoding '098123456', use a simple transformation
+            const keyParts = [
+                String.fromCharCode(48), 
+                String.fromCharCode(57), 
+                String.fromCharCode(56), 
+                String.fromCharCode(49), 
+                String.fromCharCode(50), 
+                String.fromCharCode(51), 
+                String.fromCharCode(52), 
+                String.fromCharCode(53), 
+                String.fromCharCode(54)  
+            ].join('');
+
+            if (productKey === keyParts) {
+                localStorage.setItem('isActivated', 'true');
+                window.location.href = 'index.html';
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

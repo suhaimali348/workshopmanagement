@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management - OZON DETAILING</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="images/transport.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        #logout-link {
+            color: #e74c3c;
+        }
+
+        #logout-link:hover {
+            background-color: #c0392b;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        main h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        /* Message Area */
+        #message-area,
+        #stock-modal-message-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        td.number {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        td.wrap {
+            word-break: break-word;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .action-buttons button {
+            margin-right: 0.5rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* Buttons */
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .button-secondary:hover {
+            background-color: #6c757d;
+        }
+
+        .button-warning {
+            background-color: #f39c12;
+        }
+
+        .button-warning:hover {
+            background-color: #e67e22;
+        }
+
+        .button-danger {
+            background-color: #e74c3c;
+        }
+
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .button-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            header h1 a {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul li a {
+                padding: 0.5rem;
+                width: 100%;
+                text-align: left;
+            }
+
+            main {
+                margin: 1rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .form-row .form-group {
+                min-width: 100%;
+            }
+
+            .modal-content {
+                margin: 20% auto;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="dashboard.html">OZON DETAILING</a></h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="billing.html">Billing</a></li>
+                <li><a href="stock.html" class="active">Stock</a></li>
+                <li><a href="salary.html">Salaries</a></li>
+                <li><a href="expenses.html">Expenses</a></li>
+                <li><a href="view_bills.html">View Bills</a></li>
+                <li><a href="warrantypackage.html">Warranty Packages</a></li>
+                <li><a href="#" id="logout-link">Logout (<span id="logged-in-user"></span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="content-section">
+            <h2>Stock Item Management</h2>
+            <div id="message-area"></div>
+            <button id="add-stock-btn" class="button"><i class="fas fa-plus"></i> Add New Stock Item</button>
+            <div style="overflow-x: auto; margin-top: 1.5rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th class="wrap">Name</th>
+                            <th class="wrap">Description</th>
+                            <th class="number">Qty</th>
+                            <th class="number">Price (₹)</th>
+                            <th class="number">Tax (%)</th>
+                            <th class="wrap">Supplier</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-table-body">
+                        <tr><td colspan="8" style="text-align:center;">Loading stock...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Add/Edit Stock Modal -->
+        <div id="stock-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">&times;</span>
+                <h3 id="stock-modal-title">Add Stock Item</h3>
+                <div id="stock-modal-message-area"></div>
+                <form id="stock-form">
+                    <input type="hidden" id="stock-edit-original-code">
+                    <div class="form-group">
+                        <label for="stock-code">Item Code (Unique) *:</label>
+                        <input type="text" id="stock-code" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-name">Item Name *:</label>
+                        <input type="text" id="stock-name" required aria-required="true WAV">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-description">Description:</label>
+                        <textarea id="stock-description" aria-label="Stock item description"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="stock-quantity">Quantity *:</label>
+                            <input type="number" id="stock-quantity" min="0" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="stock-price">Unit Price (₹) *:</label>
+                            <input type="number" id="stock-price" step="0.01" min="0" required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="stock-tax">Tax (%):</label>
+                            <input type="number" id="stock-tax" step="0.01" min="0" aria-label="Tax percentage">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-supplier">Supplier:</label>
+                        <input type="text" id="stock-supplier" aria-label="Supplier name">
+                    </div>
+                    <button type="submit" id="save-stock-btn" class="button"><i class="fas fa-save"></i> Save Item</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('stock-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+
+    <script>
+        // ---=== Common Helpers ===---
+        const LS_KEYS = { USERS: 'workshop_users', CURRENT_USER: 'workshop_currentUser', STOCK: 'workshop_stock' };
+        function getData(key) { 
+            const data = localStorage.getItem(key); 
+            try { return data ? JSON.parse(data) : []; } 
+            catch (e) { console.error(`Error parsing LS key "${key}":`, e); return []; } 
+        }
+        function setData(key, data) { 
+            try { localStorage.setItem(key, JSON.stringify(data)); } 
+            catch (e) { console.error(`Error setting LS key "${key}":`, e); } 
+        }
+        function getCurrentUser() { 
+            return localStorage.getItem(LS_KEYS.CURRENT_USER); 
+        }
+        function setCurrentUser(email) { 
+            if (email) { localStorage.setItem(LS_KEYS.CURRENT_USER, email); } 
+            else { localStorage.removeItem(LS_KEYS.CURRENT_USER); } 
+        }
+        function showMessage(type, message, areaId = 'message-area', persistent = false, selectorSuffix = '') { 
+            const area = document.getElementById(areaId); 
+            if (!area) return; 
+            const messageDiv = document.createElement('div'); 
+            const messageClass = `message message-${type} ${selectorSuffix ? 'msg-' + selectorSuffix : ''}`; 
+            messageDiv.className = messageClass.trim(); 
+            messageDiv.innerHTML = message; 
+            area.appendChild(messageDiv); 
+            if (!persistent) { 
+                setTimeout(() => { messageDiv.remove(); }, 5000); 
+            } 
+        }
+        function clearMessages(areaId = 'message-area', selector = '.message') { 
+            const area = document.getElementById(areaId); 
+            if (area) { area.querySelectorAll(selector).forEach(msg => msg.remove()); } 
+        }
+        function checkLogin() { 
+            const user = getCurrentUser(); 
+            if (!user) { 
+                const publicPages = ['login.html', 'signup.html', 'index.html', '']; 
+                const currentPage = window.location.pathname.split('/').pop(); 
+                if (!publicPages.includes(currentPage)) { 
+                    window.location.href = 'login.html'; 
+                } 
+                return false; 
+            } 
+            const userDisplay = document.getElementById('logged-in-user'); 
+            if(userDisplay) userDisplay.textContent = user; 
+            return true; 
+        }
+        function handleLogout() { 
+            setCurrentUser(null); 
+            window.location.href = 'login.html'; 
+        }
+        function openModal(modalId) { 
+            const modal = document.getElementById(modalId); 
+            if (modal) {
+                modal.style.display = 'block';
+                const firstInput = modal.querySelector('input');
+                if (firstInput) firstInput.focus();
+            }
+        }
+        function closeModal(modalId) { 
+            const modal = document.getElementById(modalId); 
+            if (modal) {
+                modal.style.display = 'none'; 
+                const form = modal.querySelector('form'); 
+                if (form) form.reset(); 
+                clearMessages(modalId + '-message-area'); 
+                const codeInput = modal.querySelector('#stock-code'); 
+                if(codeInput) codeInput.readOnly = false; 
+                const originalCodeInput = modal.querySelector('#stock-edit-original-code'); 
+                if (originalCodeInput) originalCodeInput.value = ''; 
+            }
+        }
+        window.onclick = function(event) { 
+            const modals = document.querySelectorAll('.modal'); 
+            modals.forEach(modal => { 
+                if (event.target == modal) { 
+                    closeModal(modal.id); 
+                } 
+            }); 
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkLogin()) return;
+
+            const stockTableBody = document.getElementById('stock-table-body');
+            const addStockBtn = document.getElementById('add-stock-btn');
+            const stockForm = document.getElementById('stock-form');
+            const stockModalTitle = document.getElementById('stock-modal-title');
+            const modalClose = document.querySelector('.modal-close');
+            if (modalClose) {
+                modalClose.addEventListener('click', () => closeModal('stock-modal'));
+            }
+
+            function displayStock() {
+                if (!stockTableBody) return;
+                const stock = getData(LS_KEYS.STOCK);
+                stockTableBody.innerHTML = '';
+
+                if (stock.length === 0) {
+                    stockTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No stock items found. Add one!</td></tr>';
+                    return;
+                }
+                stock.sort((a, b) => a.code.localeCompare(b.code));
+                stock.forEach(item => {
+                    const row = stockTableBody.insertRow();
+                    const taxDisplay = item.taxPercent != null && !isNaN(item.taxPercent) ? `${parseFloat(item.taxPercent).toFixed(2)}%` : 'N/A';
+                    row.innerHTML = `
+                        <td>${item.code}</td>
+                        <td class="wrap">${item.name}</td>
+                        <td class="wrap">${item.description || ''}</td>
+                        <td class="number">${item.quantity}</td>
+                        <td class="number">${parseFloat(item.price || 0).toFixed(2)}</td>
+                        <td class="number">${taxDisplay}</td>
+                        <td class="wrap">${item.supplier || ''}</td>
+                        <td class="action-buttons">
+                            <button class="button button-warning button-small edit-stock-btn" data-code="${item.code}" aria-label="Edit stock item ${item.code}"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="button button-danger button-small delete-stock-btn" data-code="${item.code}" aria-label="Delete stock item ${item.code}"><i class="fas fa-trash"></i> Delete</button>
+                        </td>
+                    `;
+                });
+                attachStockActionListeners();
+            }
+
+            function attachStockActionListeners() {
+                document.querySelectorAll('.edit-stock-btn').forEach(button => { 
+                    button.removeEventListener('click', handleEditStock); 
+                    button.addEventListener('click', handleEditStock); 
+                });
+                document.querySelectorAll('.delete-stock-btn').forEach(button => { 
+                    button.removeEventListener('click', handleDeleteStock); 
+                    button.addEventListener('click', handleDeleteStock); 
+                });
+            }
+
+            function handleEditStock(event) {
+                const itemCode = event.target.getAttribute('data-code') || event.target.parentElement.getAttribute('data-code');
+                const stock = getData(LS_KEYS.STOCK);
+                const item = stock.find(s => s.code === itemCode);
+                if (item && stockForm) {
+                    clearMessages('stock-modal-message-area');
+                    stockModalTitle.textContent = 'Edit Stock Item';
+                    document.getElementById('stock-edit-original-code').value = item.code;
+                    document.getElementById('stock-code').value = item.code;
+                    document.getElementById('stock-name').value = item.name;
+                    document.getElementById('stock-description').value = item.description || '';
+                    document.getElementById('stock-quantity').value = item.quantity;
+                    document.getElementById('stock-price').value = item.price;
+                    document.getElementById('stock-supplier').value = item.supplier || '';
+                    document.getElementById('stock-tax').value = item.taxPercent != null ? item.taxPercent : '';
+                    openModal('stock-modal');
+                }
+            }
+
+            function handleDeleteStock(event) {
+                const itemCode = event.target.getAttribute('data-code') || event.target.parentElement.getAttribute('data-code');
+                const stock = getData(LS_KEYS.STOCK);
+                const item = stock.find(s => s.code === itemCode);
+                if (item && confirm(`Delete stock item ${item.name} (${itemCode})?`)) {
+                    let updatedStock = stock.filter(s => s.code !== itemCode);
+                    setData(LS_KEYS.STOCK, updatedStock);
+                    showMessage('success', `Stock item ${item.name} deleted.`);
+                    displayStock();
+                }
+            }
+
+            if (addStockBtn) {
+                addStockBtn.onclick = () => { 
+                    if(stockForm) stockForm.reset(); 
+                    clearMessages('stock-modal-message-area'); 
+                    stockModalTitle.textContent = 'Add Stock Item'; 
+                    document.getElementById('stock-edit-original-code').value = ''; 
+                    document.getElementById('stock-code').readOnly = false; 
+                    openModal('stock-modal'); 
+                };
+            }
+
+            if (stockForm) {
+                stockForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const originalCode = document.getElementById('stock-edit-original-code').value;
+                    const itemCode = document.getElementById('stock-code').value.trim().toUpperCase();
+                    const name = document.getElementById('stock-name').value.trim();
+                    const description = document.getElementById('stock-description').value.trim();
+                    const quantity = parseInt(document.getElementById('stock-quantity').value);
+                    const price = parseFloat(document.getElementById('stock-price').value);
+                    const supplier = document.getElementById('stock-supplier').value.trim();
+                    const taxPercentRaw = document.getElementById('stock-tax').value;
+                    const taxPercent = (taxPercentRaw && !isNaN(parseFloat(taxPercentRaw))) ? parseFloat(taxPercentRaw) : 0;
+
+                    if (!itemCode || !name || isNaN(quantity) || quantity < 0 || isNaN(price) || price < 0) {
+                        showMessage('error', 'Item Code, Name, Quantity (>=0), and Price (>=0) are required.', 'stock-modal-message-area');
+                        return;
+                    }
+
+                    let stock = getData(LS_KEYS.STOCK);
+                    const isEditing = !!originalCode;
+                    const codeExists = stock.some(s => s.code === itemCode && s.code !== originalCode);
+                    if (codeExists) {
+                        showMessage('error', `Item code ${itemCode} already exists.`, 'stock-modal-message-area');
+                        return;
+                    }
+
+                    if (isEditing) {
+                        const index = stock.findIndex(s => s.code === originalCode);
+                        if (index > -1) {
+                            stock[index] = { code: itemCode, name, description, quantity, price, supplier, taxPercent: taxPercent };
+                            showMessage('success', `Stock item ${name} updated.`);
+                        } else {
+                            showMessage('error', 'Original item not found for editing.', 'stock-modal-message-area'); 
+                            return;
+                        }
+                    } else {
+                        const newItem = { code: itemCode, name, description, quantity, price, supplier, taxPercent: taxPercent };
+                        stock.push(newItem);
+                        showMessage('success', `Stock item ${name} added.`);
+                    }
+
+                    setData(LS_KEYS.STOCK, stock);
+                    closeModal('stock-modal');
+                    displayStock();
+                });
+            }
+
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) { 
+                logoutLink.addEventListener('click', (e) => { 
+                    e.preventDefault(); 
+                    handleLogout(); 
+                }); 
+            }
+
+            displayStock();
+        });
+    </script>
+</body>
+</html>

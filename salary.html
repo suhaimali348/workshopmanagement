@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary & Expense Management - OZON DETAILING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="images/transport.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+        #logout-link {
+            color: #e74c3c;
+        }
+        #logout-link:hover {
+            background-color: #c0392b;
+        }
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        main h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        #message-area,
+        #worker-modal-message-area,
+        #add-borrowed-modal-message-area,
+        #borrowing-history-modal-message-area,
+        #last-paid-history-modal-message-area,
+        #borrowing-reset-history-modal-message-area,
+        #expense-modal-message-area,
+        #add-category-modal-message-area,
+        #manage-categories-modal-message-area {
+            margin-bottom: 1.5rem;
+        }
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        td.number {
+            text-align: right;
+            font-family: monospace;
+        }
+        td.wrap {
+            word-break: break-word;
+        }
+        tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+        .action-buttons button, .main-action-buttons button {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-table-container, .category-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .category-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .category-list-item:last-child {
+            border-bottom: none;
+        }
+        .category-list-item span {
+            flex-grow: 1;
+             margin-right: 10px;
+        }
+        .category-list-item .action-buttons {
+            white-space: nowrap;
+        }
+        .category-list-item .action-buttons button {
+            margin-left: 0.5rem;
+            margin-right: 0;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+        .modal-content h3 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+        .button-secondary:hover {
+            background-color: #6c757d;
+        }
+        .button-warning {
+            background-color: #f39c12;
+        }
+        .button-warning:hover {
+            background-color: #e67e22;
+        }
+        .button-danger {
+            background-color: #e74c3c;
+        }
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+        .button-success {
+            background-color: #2ecc71;
+        }
+        .button-success:hover {
+            background-color: #27ae60;
+        }
+        .button-info {
+            background-color: #17a2b8;
+        }
+        .button-info:hover {
+            background-color: #138496;
+        }
+        .button-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 2rem;
+        }
+        .category-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category-group select {
+            flex-grow: 1;
+        }
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+            header h1 a {
+                font-size: 1.5rem;
+            }
+            nav ul {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            nav ul li a {
+                padding: 0.5rem;
+                width: 100%;
+                text-align: left;
+            }
+            main {
+                margin: 1rem;
+            }
+            .modal-content {
+                margin: 20% auto;
+                padding: 1.5rem;
+            }
+            .main-action-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+            .main-action-buttons button {
+                width: 100%;
+                margin-right: 0;
+            }
+        }
+        @media (max-width: 600px) {
+            table {
+                font-size: 0.8rem;
+            }
+            th, td {
+                padding: 0.5rem;
+            }
+            .action-buttons button {
+                margin-right: 0.3rem;
+                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+                margin-bottom: 0.3rem;
+            }
+             .main-action-buttons button {
+                font-size: 0.9rem;
+            }
+            .category-list-item .action-buttons button {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+            .category-list-item span {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="dashboard.html">OZON DETAILING</a></h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="billing.html">Billing</a></li>
+                <li><a href="stock.html">Stock</a></li>
+                <li><a href="salary.html" class="active">Salaries</a></li>
+                <li><a href="expenses.html">Expenses</a></li>
+                <li><a href="purchases.html">Purchases</a></li>
+                <li><a href="view_bills.html">View Bills</a></li>
+                <li><a href="warrantypackage.html">Warranty Packages</a></li>
+                <li><a href="productwarranty.html">Product Warranties</a></li>
+                <li><a href="#" id="logout-link">Logout (<span id="logged-in-user"></span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="content-section">
+            <h2>Worker Salary Management</h2>
+            <div id="message-area"></div>
+            <div class="main-action-buttons">
+                <button id="add-worker-btn" class="button"><i class="fas fa-user-plus"></i> Add New Worker</button>
+                <button id="add-expense-btn" class="button button-success"><i class="fas fa-dollar-sign"></i> Add Expense</button>
+                <button id="manage-categories-btn" class="button button-info"><i class="fas fa-tags"></i> Manage Categories</button>
+                <button id="reset-borrowed-btn" class="button button-warning"><i class="fas fa-sync-alt"></i> Reset Borrowed</button>
+            </div>
+            <div style="overflow-x: auto; margin-top: 1.5rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th class="wrap">Name</th>
+                            <th class="wrap">Position</th>
+                            <th class="number">Salary (₹)</th>
+                            <th class="number">Money Borrowed (₹)</th>
+                            <th>Last Paid</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workers-table-body">
+                        <tr><td colspan="7" style="text-align:center;">Loading workers...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Worker Modal -->
+        <div id="worker-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3 id="worker-modal-title">Add Worker</h3>
+                <div id="worker-modal-message-area"></div>
+                <form id="worker-form">
+                    <input type="hidden" id="worker-id">
+                    <div class="form-group">
+                        <label for="worker-name">Name *:</label>
+                        <input type="text" id="worker-name" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="worker-position">Position *:</label>
+                        <input type="text" id="worker-position" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="worker-salary">Monthly Salary (₹) *:</label>
+                        <input type="number" id="worker-salary" step="0.01" min="0" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="worker-last-paid">Last Paid Date:</label>
+                        <input type="date" id="worker-last-paid" aria-label="Last paid date">
+                    </div>
+                    <button type="submit" id="save-worker-btn" class="button"><i class="fas fa-save"></i> Save Worker</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('worker-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Expense Modal -->
+        <div id="expense-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Add New Expense</h3>
+                <div id="expense-modal-message-area"></div>
+                <form id="expense-form">
+                    <div class="form-group">
+                        <label for="expense-description">Description *:</label>
+                        <input type="text" id="expense-description" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-amount">Amount (₹) *:</label>
+                        <input type="number" id="expense-amount" step="0.01" min="0" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-category-select">Category *:</label>
+                        <div class="category-group">
+                            <select id="expense-category-select" required aria-required="true">
+                                <option value="">-- Select Category --</option>
+                            </select>
+                            <button type="button" id="open-add-category-modal-btn" class="button button-small" aria-label="Add new category"><i class="fas fa-plus"></i> New</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-date">Date *:</label>
+                        <input type="date" id="expense-date" required aria-required="true">
+                    </div>
+                    <button type="submit" id="save-expense-btn" class="button"><i class="fas fa-save"></i> Save Expense</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('expense-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add/Edit Category Modal -->
+        <div id="add-category-modal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3 id="add-category-modal-title">Add New Expense Category</h3>
+                <div id="add-category-modal-message-area"></div>
+                <form id="add-category-form">
+                    <input type="hidden" id="edit-category-id">
+                    <div class="form-group">
+                        <label for="new-category-name">Category Name *:</label>
+                        <input type="text" id="new-category-name" required aria-required="true">
+                    </div>
+                    <button type="submit" id="save-category-btn" class="button"><i class="fas fa-save"></i> Save Category</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('add-category-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Manage Categories Modal -->
+        <div id="manage-categories-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Manage Expense Categories</h3>
+                <div id="manage-categories-modal-message-area"></div>
+                <div class="category-list-container" id="category-list-display">
+                    <p style="text-align:center; padding:1rem;">Loading categories...</p>
+                </div>
+                <button type="button" class="button button-secondary" style="margin-top: 1rem;" onclick="closeModal('manage-categories-modal')"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+
+
+        <!-- Existing Modals for Borrowing/Paying -->
+        <div id="add-borrowed-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Add Borrowed Money</h3>
+                <div id="add-borrowed-modal-message-area"></div>
+                <form id="add-borrowed-form">
+                    <input type="hidden" id="borrowed-worker-id">
+                    <div class="form-group">
+                        <label for="borrowed-amount">Amount to Add (₹) *:</label>
+                        <input type="number" id="borrowed-amount" step="0.01" min="0" required aria-required="true" aria-label="Amount to add">
+                    </div>
+                    <div class="form-group">
+                        <label for="borrowed-date">Borrowed Date *:</label>
+                        <input type="date" id="borrowed-date" required aria-required="true" aria-label="Date of borrowing">
+                    </div>
+                    <button type="submit" id="save-borrowed-btn" class="button"><i class="fas fa-save"></i> Save</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('add-borrowed-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+        <div id="borrowing-history-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Borrowing History</h3>
+                <div id="borrowing-history-modal-message-area"></div>
+                <div class="form-group">
+                    <label for="borrow-filter">Filter by Date:</label>
+                    <select id="borrow-filter" aria-label="Filter borrowing history by date">
+                        <option value="all">All</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="this-month">This Month</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="specific-date">Specific Date</option>
+                    </select>
+                </div>
+                <div class="form-group" id="specific-date-group" style="display: none;">
+                    <label for="specific-borrow-date">Select Date:</label>
+                    <input type="date" id="specific-borrow-date" aria-label="Select specific borrowing date">
+                </div>
+                <div class="modal-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="number">Amount (₹)</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="borrowing-history-table-body">
+                            <tr><td colspan="3" style="text-align:center;">Loading borrowing history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="button button-secondary" onclick="closeModal('borrowing-history-modal')"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+        <div id="last-paid-history-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Last Paid History</h3>
+                <div id="last-paid-history-modal-message-area"></div>
+                <div class="modal-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="number">Amount (₹)</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="last-paid-history-table-body">
+                            <tr><td colspan="3" style="text-align:center;">Loading last paid history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="button button-secondary" onclick="closeModal('last-paid-history-modal')"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+        <div id="pay-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Add Payment</h3>
+                <div id="pay-modal-message-area"></div>
+                <form id="pay-form">
+                    <input type="hidden" id="pay-worker-id">
+                    <div class="form-group">
+                        <label for="pay-amount">Payment Amount (₹) *:</label>
+                        <input type="number" id="pay-amount" step="0.01" min="0" required aria-required="true" aria-label="Payment amount">
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-date">Payment Date *:</label>
+                        <input type="date" id="pay-date" required aria-required="true" aria-label="Date of payment">
+                    </div>
+                    <button type="submit" id="save-pay-btn" class="button"><i class="fas fa-save"></i> Save</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('pay-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+        <div id="borrowing-reset-history-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3>Borrowing Reset History</h3>
+                <div id="borrowing-reset-history-modal-message-area"></div>
+                <div class="form-group">
+                    <label for="reset-filter">Filter by Date:</label>
+                    <select id="reset-filter" aria-label="Filter borrowing reset history by date">
+                        <option value="all">All</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="this-month">This Month</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="specific-date">Specific Date</option>
+                    </select>
+                </div>
+                <div class="form-group" id="specific-reset-date-group" style="display: none;">
+                    <label for="specific-reset-date">Select Date:</label>
+                    <input type="date" id="specific-reset-date" aria-label="Select specific reset date">
+                </div>
+                <div class="modal-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="number">Total Borrowed (₹)</th>
+                                <th>Reset Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="borrowing-reset-history-table-body">
+                            <tr><td colspan="2" style="text-align:center;">Loading borrowing reset history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="button button-secondary" onclick="closeModal('borrowing-reset-history-modal')"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+    <script>
+        const useLocalStorage = true; 
+
+        const LS_KEYS = { 
+            USERS: 'workshop_users', 
+            CURRENT_USER: 'workshop_currentUser', 
+            WORKERS: 'workshop_workers', 
+            LAST_RESET: 'workshop_last_borrowed_reset', // This key is still used by manual reset
+            EXPENSE_CATEGORIES: 'workshop_expense_categories',
+            EXPENSES: 'workshop_expenses'
+        };
+
+        async function getData(key) {
+            try {
+                const rawData = localStorage.getItem(key);
+                let dataForKey = rawData ? JSON.parse(rawData) : [];
+                
+                if (key === LS_KEYS.WORKERS) {
+                    return (dataForKey || []).map(worker => ({
+                        ...worker,
+                        borrowingHistory: worker.borrowingHistory || [],
+                        lastPaidHistory: worker.lastPaidHistory || [],
+                        borrowingResetHistory: worker.borrowingResetHistory || [],
+                        borrowed: (worker.borrowingHistory || []).reduce((sum, record) => sum + parseFloat(record.amount || 0), 0)
+                    }));
+                }
+                return dataForKey || [];
+            } catch (e) { console.error(`Error reading data for key "${key}" from localStorage:`, e); return []; }
+        }
+        async function setData(key, data) {
+            try {
+                if (data === undefined || data === null) { localStorage.removeItem(key); return; }
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) { console.error(`Error setting data for key "${key}" in localStorage:`, e); showMessage('error', `Failed to save data for ${key}.`); }
+        }
+        async function getCurrentUser() { try { return localStorage.getItem(LS_KEYS.CURRENT_USER); } catch (e) { console.error(e); return null; } }
+        async function setCurrentUser(email) { try { if (email) localStorage.setItem(LS_KEYS.CURRENT_USER, email); else localStorage.removeItem(LS_KEYS.CURRENT_USER); } catch (e) { console.error(e); } }
+        function showMessage(type, message, areaId = 'message-area', persistent = false) {
+            const area = document.getElementById(areaId); if (!area) return;
+            const msgDiv = document.createElement('div'); msgDiv.className = `message message-${type}`; msgDiv.textContent = message;
+            area.innerHTML = ''; area.appendChild(msgDiv);
+            if (!persistent) setTimeout(() => { if(msgDiv.parentNode === area) msgDiv.remove(); }, 5000);
+        }
+        function clearMessages(areaId = 'message-area') { const area = document.getElementById(areaId); if (area) area.innerHTML = ''; }
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId); if (modal) { modal.style.display = 'block';
+            const firstInput = modal.querySelector('input:not([type="hidden"]), select'); if (firstInput) firstInput.focus(); }
+        }
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId); if (modal) { modal.style.display = 'none';
+            const form = modal.querySelector('form'); if (form) form.reset(); clearMessages(modalId + '-message-area');
+            if (modalId === 'borrowing-history-modal') { const bf=document.getElementById('borrow-filter'); if(bf)bf.value='all'; const sg=document.getElementById('specific-date-group'); if(sg)sg.style.display='none'; const sd=document.getElementById('specific-borrow-date'); if(sd)sd.value=''; }
+            else if (modalId === 'borrowing-reset-history-modal') { const rf=document.getElementById('reset-filter'); if(rf)rf.value='all'; const srg=document.getElementById('specific-reset-date-group'); if(srg)srg.style.display='none'; const srd=document.getElementById('specific-reset-date'); if(srd)srd.value=''; }
+            else if (modalId === 'expense-modal') { const cs=document.getElementById('expense-category-select'); if(cs)cs.value=''; } 
+            else if (modalId === 'add-category-modal') { document.getElementById('edit-category-id').value=''; document.getElementById('add-category-modal-title').textContent='Add New Expense Category';} }
+        }
+        async function checkLogin() {
+            const user = await getCurrentUser(); if (!user) { const pP=['login.html','signup.html','index.html','']; const cP=window.location.pathname.split('/').pop(); if(!pP.includes(cP))window.location.href='login.html'; return false;}
+            const uD=document.getElementById('logged-in-user'); if(uD)uD.textContent=user.split('@')[0]; return true;
+        }
+        function handleLogout() { setCurrentUser(null); window.location.href='login.html'; }
+        function generateId(prefix = '') { return prefix + Date.now().toString(36) + Math.random().toString(36).substring(2,8); }
+        function getTodayDate() { return new Date().toISOString().split('T')[0]; }
+        
+        // The shouldResetBorrowed function is no longer called automatically, 
+        // but it's harmless to keep for potential future use or reference.
+        // It is NOT used for the manual reset.
+        async function shouldResetBorrowed() { 
+            try { const n=new Date(),cM=n.getMonth(),cY=n.getFullYear(); let lRD=localStorage.getItem(LS_KEYS.LAST_RESET); if(!lRD)return true; const lRDate=new Date(JSON.parse(lRD)); if(isNaN(lRDate.getTime()))return true; return lRDate.getMonth()!==cM||lRDate.getFullYear()!==cY;}catch(e){return true;}
+        }
+        
+        // This function is now only called by the MANUAL "Reset Borrowed" button.
+        async function resetAllBorrowed() {
+            try { 
+                let W=await getData(LS_KEYS.WORKERS);
+                const rD=getTodayDate();
+                W=W.map(w=>{
+                    const cB=parseFloat(w.borrowed||0);
+                    if(cB>0){
+                        w.borrowingResetHistory=w.borrowingResetHistory||[];
+                        w.borrowingResetHistory.push({totalBorrowed:cB,resetDate:rD});
+                    }
+                    return{...w,borrowed:0,borrowingHistory:[]};
+                });
+                await setData(LS_KEYS.WORKERS,W);
+                // Record the time of this manual reset
+                localStorage.setItem(LS_KEYS.LAST_RESET,JSON.stringify(new Date()));
+                showMessage('success','All borrowed amounts reset.');
+            }catch(e){
+                showMessage('error','Failed to reset borrowed.');
+            }
+        }
+        async function backupDataForKey(key) {
+            try { const d=await getData(key); if(d&&((Array.isArray(d)&&d.length>0)||(!Array.isArray(d)&&d!==null))){localStorage.setItem(`${key}_backup_${Date.now()}`,JSON.stringify(d));}}catch(e){console.error(e);}
+        }
+        async function restoreDataForKey(key) {
+            try { const K=Object.keys(localStorage).filter(k=>k.startsWith(key+'_backup_')); if(K.length===0)return false; K.sort((a,b)=>parseInt(b.split('_').pop())-parseInt(a.split('_').pop())); const d=localStorage.getItem(K[0]); if(d){await setData(key,JSON.parse(d));return true;}return false;}catch(e){return false;}
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("Using localStorage for all data persistence.");
+            if (!await checkLogin()) return;
+            
+            // --- AUTOMATIC RESET LOGIC REMOVED ---
+            // The following block that automatically reset borrowed amounts has been removed.
+            /* 
+            if (await shouldResetBorrowed()) {
+                await backupDataForKey(LS_KEYS.WORKERS);
+                await resetAllBorrowed();
+            }
+            */
+            // --- END OF REMOVED AUTOMATIC RESET LOGIC ---
+
+            const workersTableBody = document.getElementById('workers-table-body');
+            const addWorkerBtn = document.getElementById('add-worker-btn');
+            const resetBorrowedBtn = document.getElementById('reset-borrowed-btn'); // Manual reset button
+            const workerForm = document.getElementById('worker-form');
+            const addBorrowedForm = document.getElementById('add-borrowed-form');
+            const payForm = document.getElementById('pay-form');
+            const workerModalTitle = document.getElementById('worker-modal-title');
+            const borrowingHistoryTableBody = document.getElementById('borrowing-history-table-body');
+            const lastPaidHistoryTableBody = document.getElementById('last-paid-history-table-body');
+            const borrowingResetHistoryTableBody = document.getElementById('borrowing-reset-history-table-body');
+            
+            const addExpenseBtn = document.getElementById('add-expense-btn');
+            const expenseForm = document.getElementById('expense-form');
+            const openAddCategoryModalBtn = document.getElementById('open-add-category-modal-btn');
+            const addCategoryForm = document.getElementById('add-category-form');
+            const expenseCategorySelect = document.getElementById('expense-category-select');
+            const manageCategoriesBtn = document.getElementById('manage-categories-btn');
+            const categoryListDisplay = document.getElementById('category-list-display');
+
+            const modalCloses = document.querySelectorAll('.modal-close');
+            modalCloses.forEach(c => c.addEventListener('click', () => closeModal(c.closest('.modal').id)));
+            window.onclick = e => document.querySelectorAll('.modal').forEach(m => { if (e.target == m) closeModal(m.id); });
+
+            async function displayWorkers() { 
+                if (!workersTableBody) return; let W = await getData(LS_KEYS.WORKERS); W = W.filter(w => w && w.id && w.name);
+                workersTableBody.innerHTML = ''; if (W.length === 0) { workersTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No workers.</td></tr>'; return; }
+                W.sort((a,b)=>a.name.localeCompare(b.name)); W.forEach(w=>{const r=workersTableBody.insertRow(); const lpd=w.lastPaidHistory&&w.lastPaidHistory.length>0?w.lastPaidHistory[w.lastPaidHistory.length-1].date:w.lastPaid||'N/A'; const flpd=lpd!=='N/A'?new Date(lpd).toLocaleDateString('en-GB'):'N/A';
+                r.innerHTML=`<td>${w.id}</td><td class="wrap">${w.name}</td><td class="wrap">${w.position}</td><td class="number">${parseFloat(w.salary||0).toFixed(2)}</td><td class="number">${parseFloat(w.borrowed||0).toFixed(2)}</td><td>${flpd}</td>
+                <td class="action-buttons"><button class="button button-info button-small view-borrowed-btn" data-id="${w.id}"><i class="fas fa-eye"></i> View Borrowed</button><button class="button button-info button-small view-last-paid-btn" data-id="${w.id}"><i class="fas fa-eye"></i> View Last Paid</button><button class="button button-info button-small view-reset-history-btn" data-id="${w.id}"><i class="fas fa-history"></i> Reset History</button><button class="button button-success button-small add-borrowed-btn" data-id="${w.id}"><i class="fas fa-plus-circle"></i> Add Borrowed</button><button class="button button-success button-small pay-btn" data-id="${w.id}"><i class="fas fa-money-bill"></i> Pay</button><button class="button button-warning button-small edit-worker-btn" data-id="${w.id}"><i class="fas fa-edit"></i> Edit</button><button class="button button-danger button-small delete-worker-btn" data-id="${w.id}"><i class="fas fa-trash"></i> Delete</button></td>`;});
+                attachWorkerActionListeners();
+            }
+            function filterHistory(h, f, sD) { 
+                const t=new Date(),tS=t.toISOString().split('T')[0]; const y=new Date(t);y.setDate(t.getDate()-1);const yS=y.toISOString().split('T')[0];
+                const cM=t.getMonth(),cY=t.getFullYear(); const lMD=new Date(t);lMD.setMonth(t.getMonth()-1);const lMM=lMD.getMonth(),lMY=lMD.getFullYear();
+                return h.filter(r=>{const dF=r.date||r.resetDate;if(!dF)return false;const rD=new Date(dF);if(isNaN(rD.getTime()))return false;
+                if(f==='today')return dF.startsWith(tS); if(f==='yesterday')return dF.startsWith(yS); if(f==='this-month')return rD.getMonth()===cM&&rD.getFullYear()===cY;
+                if(f==='last-month')return rD.getMonth()===lMM&&rD.getFullYear()===lMY; if(f==='specific-date'&&sD)return dF.startsWith(sD); return true;});
+            }
+            async function displayBorrowingHistory(wId) { 
+                if(!borrowingHistoryTableBody)return; borrowingHistoryTableBody.innerHTML='<tr><td colspan="3" style="text-align:center;">Loading...</td></tr>';
+                const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);
+                const fS=document.getElementById('borrow-filter'),sDI=document.getElementById('specific-borrow-date');
+                const f=fS?fS.value:'all',sD=sDI?sDI.value:''; borrowingHistoryTableBody.innerHTML='';
+                if(!w||!w.borrowingHistory||w.borrowingHistory.length===0){borrowingHistoryTableBody.innerHTML='<tr><td colspan="3" style="text-align:center;">No history.</td></tr>';return;}
+                const fH=filterHistory(w.borrowingHistory,f,sD); if(fH.length===0){borrowingHistoryTableBody.innerHTML='<tr><td colspan="3" style="text-align:center;">No records match.</td></tr>';return;}
+                fH.sort((a,b)=>new Date(b.date)-new Date(a.date)); fH.forEach(r=>{const oI=w.borrowingHistory.findIndex(bh=>bh.date===r.date&&bh.amount===r.amount);
+                const row=borrowingHistoryTableBody.insertRow();let fD='N/A';if(r.date){const dO=new Date(r.date);if(!isNaN(dO.getTime()))fD=dO.toLocaleDateString('en-GB');}
+                row.innerHTML=`<td class="number">${parseFloat(r.amount||0).toFixed(2)}</td><td>${fD}</td><td class="action-buttons"><button class="button button-danger button-small delete-borrowed-btn" data-worker-id="${w.id}" data-index="${oI}"><i class="fas fa-trash"></i></button></td>`;});
+                borrowingHistoryTableBody.dataset.workerId=wId; attachBorrowedActionListeners();
+            }
+            async function displayLastPaidHistory(wId) { 
+                if(!lastPaidHistoryTableBody)return; lastPaidHistoryTableBody.innerHTML='<tr><td colspan="3" style="text-align:center;">Loading...</td></tr>';
+                const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId); lastPaidHistoryTableBody.innerHTML='';
+                if(!w||!w.lastPaidHistory||w.lastPaidHistory.length===0){lastPaidHistoryTableBody.innerHTML='<tr><td colspan="3" style="text-align:center;">No history.</td></tr>';return;}
+                const sH=[...w.lastPaidHistory].sort((a,b)=>new Date(b.date)-new Date(a.date)); sH.forEach(r=>{const oI=w.lastPaidHistory.findIndex(lph=>lph.date===r.date&&lph.amount===r.amount);
+                const row=lastPaidHistoryTableBody.insertRow();let fD='N/A';if(r.date){const dO=new Date(r.date);if(!isNaN(dO.getTime()))fD=dO.toLocaleDateString('en-GB');}
+                row.innerHTML=`<td class="number">${parseFloat(r.amount||0).toFixed(2)}</td><td>${fD}</td><td class="action-buttons"><button class="button button-danger button-small delete-last-paid-btn" data-worker-id="${w.id}" data-index="${oI}"><i class="fas fa-trash"></i></button></td>`;});
+                attachLastPaidActionListeners();
+            }
+            async function displayBorrowingResetHistory(wId) { 
+                if(!borrowingResetHistoryTableBody)return; borrowingResetHistoryTableBody.innerHTML='<tr><td colspan="2" style="text-align:center;">Loading...</td></tr>';
+                const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);
+                const fS=document.getElementById('reset-filter'),sDI=document.getElementById('specific-reset-date');
+                const f=fS?fS.value:'all',sD=sDI?sDI.value:''; borrowingResetHistoryTableBody.innerHTML='';
+                if(!w||!w.borrowingResetHistory||w.borrowingResetHistory.length===0){borrowingResetHistoryTableBody.innerHTML='<tr><td colspan="2" style="text-align:center;">No history.</td></tr>';return;}
+                const fH=filterHistory(w.borrowingResetHistory,f,sD); if(fH.length===0){borrowingResetHistoryTableBody.innerHTML='<tr><td colspan="2" style="text-align:center;">No records match.</td></tr>';return;}
+                fH.sort((a,b)=>new Date(b.resetDate)-new Date(a.resetDate)); fH.forEach(r=>{const row=borrowingResetHistoryTableBody.insertRow();let fD='N/A';
+                if(r.resetDate){const dO=new Date(r.resetDate);if(!isNaN(dO.getTime()))fD=dO.toLocaleDateString('en-GB');}
+                row.innerHTML=`<td class="number">${parseFloat(r.totalBorrowed||0).toFixed(2)}</td><td>${fD}</td>`;});
+                borrowingResetHistoryTableBody.dataset.workerId=wId;
+            }
+            function attachWorkerActionListeners() { 
+                document.querySelectorAll('.edit-worker-btn').forEach(b=>{b.removeEventListener('click',handleEditWorker);b.addEventListener('click',handleEditWorker)});
+                document.querySelectorAll('.delete-worker-btn').forEach(b=>{b.removeEventListener('click',handleDeleteWorker);b.addEventListener('click',handleDeleteWorker)});
+                document.querySelectorAll('.add-borrowed-btn').forEach(b=>{b.removeEventListener('click',handleAddBorrowed);b.addEventListener('click',handleAddBorrowed)});
+                document.querySelectorAll('.view-borrowed-btn').forEach(b=>{b.removeEventListener('click',handleViewBorrowed);b.addEventListener('click',handleViewBorrowed)});
+                document.querySelectorAll('.view-last-paid-btn').forEach(b=>{b.removeEventListener('click',handleViewLastPaid);b.addEventListener('click',handleViewLastPaid)});
+                document.querySelectorAll('.view-reset-history-btn').forEach(b=>{b.removeEventListener('click',handleViewResetHistory);b.addEventListener('click',handleViewResetHistory)});
+                document.querySelectorAll('.pay-btn').forEach(b=>{b.removeEventListener('click',handlePay);b.addEventListener('click',handlePay)});
+            }
+            function attachBorrowedActionListeners() { 
+                document.querySelectorAll('.delete-borrowed-btn').forEach(b=>{b.removeEventListener('click',handleDeleteBorrowed);b.addEventListener('click',handleDeleteBorrowed)});
+            }
+            function attachLastPaidActionListeners() { 
+                document.querySelectorAll('.delete-last-paid-btn').forEach(b=>{b.removeEventListener('click',handleDeleteLastPaid);b.addEventListener('click',handleDeleteLastPaid)});
+            }
+            async function handleEditWorker(e){const tB=e.target.closest('.edit-worker-btn');if(!tB)return;const wId=tB.dataset.id;const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);if(w&&workerForm){clearMessages('worker-modal-message-area');if(workerModalTitle)workerModalTitle.textContent='Edit Worker';document.getElementById('worker-id').value=w.id;document.getElementById('worker-name').value=w.name;document.getElementById('worker-position').value=w.position;document.getElementById('worker-salary').value=w.salary;document.getElementById('worker-last-paid').value=w.lastPaid||'';openModal('worker-modal');}}
+            async function handleDeleteWorker(e){const tB=e.target.closest('.delete-worker-btn');if(!tB)return;const wId=tB.dataset.id;const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);if(w&&confirm(`Delete ${w.name}?`)){await backupDataForKey(LS_KEYS.WORKERS);let uW=W.filter(wk=>wk.id!==wId);await setData(LS_KEYS.WORKERS,uW);showMessage('success',`${w.name} deleted.`);await displayWorkers();}}
+            async function handleAddBorrowed(e){const tB=e.target.closest('.add-borrowed-btn');if(!tB)return;const wId=tB.dataset.id;const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);if(w&&addBorrowedForm){clearMessages('add-borrowed-modal-message-area');document.getElementById('borrowed-worker-id').value=w.id;document.getElementById('borrowed-amount').value='';document.getElementById('borrowed-date').value=getTodayDate();openModal('add-borrowed-modal');}}
+            async function handleViewBorrowed(e){const tB=e.target.closest('.view-borrowed-btn');if(!tB)return;const wId=tB.dataset.id;clearMessages('borrowing-history-modal-message-area');const bfS=document.getElementById('borrow-filter');if(bfS)bfS.value='all';const sdg=document.getElementById('specific-date-group');if(sdg)sdg.style.display='none';const sdi=document.getElementById('specific-borrow-date');if(sdi)sdi.value='';await displayBorrowingHistory(wId);openModal('borrowing-history-modal');}
+            async function handleViewLastPaid(e){const tB=e.target.closest('.view-last-paid-btn');if(!tB)return;const wId=tB.dataset.id;clearMessages('last-paid-history-modal-message-area');await displayLastPaidHistory(wId);openModal('last-paid-history-modal');}
+            async function handleViewResetHistory(e){const tB=e.target.closest('.view-reset-history-btn');if(!tB)return;const wId=tB.dataset.id;clearMessages('borrowing-reset-history-modal-message-area');const rfS=document.getElementById('reset-filter');if(rfS)rfS.value='all';const srdg=document.getElementById('specific-reset-date-group');if(srdg)srdg.style.display='none';const srdi=document.getElementById('specific-reset-date');if(srdi)srdi.value='';await displayBorrowingResetHistory(wId);openModal('borrowing-reset-history-modal');}
+            async function handlePay(e){const tB=e.target.closest('.pay-btn');if(!tB)return;const wId=tB.dataset.id;const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);if(w&&payForm){clearMessages('pay-modal-message-area');document.getElementById('pay-worker-id').value=w.id;document.getElementById('pay-amount').value='';document.getElementById('pay-date').value=getTodayDate();openModal('pay-modal');}}
+            async function handleDeleteBorrowed(e){const tB=e.target.closest('.delete-borrowed-btn');if(!tB)return;const wId=tB.dataset.workerId;const idx=parseInt(tB.dataset.index);const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);if(w&&w.borrowingHistory&&idx>=0&&idx<w.borrowingHistory.length){const r=w.borrowingHistory[idx];const fD=r.date?new Date(r.date).toLocaleDateString('en-GB'):'N/A';if(confirm(`Delete borrowing of ₹${parseFloat(r.amount||0).toFixed(2)} on ${fD}?`)){await backupDataForKey(LS_KEYS.WORKERS);w.borrowingHistory.splice(idx,1);w.borrowed=w.borrowingHistory.reduce((s,rec)=>s+parseFloat(rec.amount||0),0);await setData(LS_KEYS.WORKERS,W);showMessage('success','Borrowed record deleted.','borrowing-history-modal-message-area');await displayBorrowingHistory(wId);await displayWorkers();}}else{showMessage('error','Could not find record.','borrowing-history-modal-message-area');}}
+            async function handleDeleteLastPaid(e){const tB=e.target.closest('.delete-last-paid-btn');if(!tB)return;const wId=tB.dataset.workerId;const idx=parseInt(tB.dataset.index);const W=await getData(LS_KEYS.WORKERS);const w=W.find(wk=>wk.id===wId);if(w&&w.lastPaidHistory&&idx>=0&&idx<w.lastPaidHistory.length){const r=w.lastPaidHistory[idx];const fD=r.date?new Date(r.date).toLocaleDateString('en-GB'):'N/A';if(confirm(`Delete payment of ₹${parseFloat(r.amount||0).toFixed(2)} on ${fD}?`)){await backupDataForKey(LS_KEYS.WORKERS);w.lastPaidHistory.splice(idx,1);w.lastPaid=w.lastPaidHistory.length>0?[...w.lastPaidHistory].sort((a,b)=>new Date(b.date)-new Date(a.date))[0].date:null;await setData(LS_KEYS.WORKERS,W);showMessage('success','Payment record deleted.','last-paid-history-modal-message-area');await displayLastPaidHistory(wId);await displayWorkers();}}else{showMessage('error','Could not find record.','last-paid-history-modal-message-area');}}
+
+            if(addWorkerBtn){addWorkerBtn.onclick=()=>{if(workerForm)workerForm.reset();clearMessages('worker-modal-message-area');if(workerModalTitle)workerModalTitle.textContent='Add Worker';document.getElementById('worker-id').value='';openModal('worker-modal');};}
+            
+            // This is the MANUAL reset button's event listener. It remains active.
+            if(resetBorrowedBtn){resetBorrowedBtn.addEventListener('click',async()=>{if(confirm('Are you sure you want to reset all borrowed amounts for all workers? This action will archive the current borrowed amounts and set them to zero.')){await backupDataForKey(LS_KEYS.WORKERS);await resetAllBorrowed();await displayWorkers();}}); } 
+            
+            if(workerForm){workerForm.addEventListener('submit',async e=>{e.preventDefault();const wId=document.getElementById('worker-id').value,name=document.getElementById('worker-name').value.trim(),pos=document.getElementById('worker-position').value.trim(),salIn=document.getElementById('worker-salary').value,lP=document.getElementById('worker-last-paid').value;if(!name||!pos||!salIn){showMessage('error','Name,Position,Salary required.','worker-modal-message-area');return;}const sal=parseFloat(salIn);if(isNaN(sal)||sal<0){showMessage('error','Valid salary.','worker-modal-message-area');return;}await backupDataForKey(LS_KEYS.WORKERS);let W=await getData(LS_KEYS.WORKERS);let msg='';if(wId){const idx=W.findIndex(w=>w.id===wId);if(idx>-1){W[idx]={...W[idx],name,position:pos,salary:sal,lastPaid:lP||W[idx].lastPaid||null};msg=`${name} updated.`;}else{showMessage('error','Not found.','worker-modal-message-area');return;}}else{const nW={id:generateId('WKR'),name,position:pos,salary:sal,borrowed:0,lastPaid:lP||null,borrowingHistory:[],lastPaidHistory:[],borrowingResetHistory:[]};W.push(nW);msg=`${name} added.`;}await setData(LS_KEYS.WORKERS,W);showMessage('success',msg,'message-area');closeModal('worker-modal');await displayWorkers();});}
+            if(addBorrowedForm){addBorrowedForm.addEventListener('submit',async e=>{e.preventDefault();const wId=document.getElementById('borrowed-worker-id').value,amtIn=document.getElementById('borrowed-amount').value,date=document.getElementById('borrowed-date').value;if(!amtIn||!date){showMessage('error','Amount,Date required.','add-borrowed-modal-message-area');return;}const amt=parseFloat(amtIn);if(isNaN(amt)||amt<=0){showMessage('error','Valid amount.','add-borrowed-modal-message-area');return;}await backupDataForKey(LS_KEYS.WORKERS);let W=await getData(LS_KEYS.WORKERS);const idx=W.findIndex(w=>w.id===wId);if(idx>-1){W[idx].borrowingHistory=W[idx].borrowingHistory||[];W[idx].borrowingHistory.push({amount:amt,date});W[idx].borrowed=W[idx].borrowingHistory.reduce((s,r)=>s+parseFloat(r.amount||0),0);await setData(LS_KEYS.WORKERS,W);showMessage('success',`₹${amt.toFixed(2)} added to ${W[idx].name}.`,'message-area');closeModal('add-borrowed-modal');await displayWorkers();}else{showMessage('error','Not found.','add-borrowed-modal-message-area');}}); }
+            if(payForm){payForm.addEventListener('submit',async e=>{e.preventDefault();const wId=document.getElementById('pay-worker-id').value,amtIn=document.getElementById('pay-amount').value,date=document.getElementById('pay-date').value;if(!amtIn||!date){showMessage('error','Amount,Date required.','pay-modal-message-area');return;}const amt=parseFloat(amtIn);if(isNaN(amt)||amt<=0){showMessage('error','Valid amount.','pay-modal-message-area');return;}await backupDataForKey(LS_KEYS.WORKERS);let W=await getData(LS_KEYS.WORKERS);const idx=W.findIndex(w=>w.id===wId);if(idx>-1){W[idx].lastPaidHistory=W[idx].lastPaidHistory||[];W[idx].lastPaidHistory.push({amount:amt,date});W[idx].lastPaid=date;await setData(LS_KEYS.WORKERS,W);showMessage('success',`Payment of ₹${amt.toFixed(2)} for ${W[idx].name} recorded.`,'message-area');closeModal('pay-modal');await displayWorkers();}else{showMessage('error','Not found.','pay-modal-message-area');}}); }
+
+            const borrowFilter=document.getElementById('borrow-filter'),specificDateInput=document.getElementById('specific-borrow-date'),specificDateGroup=document.getElementById('specific-date-group');
+            if(borrowFilter){borrowFilter.addEventListener('change',async e=>{const wId=borrowingHistoryTableBody.dataset.workerId;if(e.target.value==='specific-date'){if(specificDateGroup)specificDateGroup.style.display='block';if(specificDateInput)specificDateInput.focus();}else{if(specificDateGroup)specificDateGroup.style.display='none';if(specificDateInput)specificDateInput.value='';}if(wId)await displayBorrowingHistory(wId);});}
+            if(specificDateInput){specificDateInput.addEventListener('change',async()=>{const wId=borrowingHistoryTableBody.dataset.workerId;if(wId&&borrowFilter&&borrowFilter.value==='specific-date')await displayBorrowingHistory(wId);});}
+            const resetFilter=document.getElementById('reset-filter'),specificResetDateInput=document.getElementById('specific-reset-date'),specificResetDateGroup=document.getElementById('specific-reset-date-group');
+            if(resetFilter){resetFilter.addEventListener('change',async e=>{const wId=borrowingResetHistoryTableBody.dataset.workerId;if(e.target.value==='specific-date'){if(specificResetDateGroup)specificResetDateGroup.style.display='block';if(specificResetDateInput)specificResetDateInput.focus();}else{if(specificResetDateGroup)specificResetDateGroup.style.display='none';if(specificResetDateInput)specificResetDateInput.value='';}if(wId)await displayBorrowingResetHistory(wId);});}
+            if(specificResetDateInput){specificResetDateInput.addEventListener('change',async()=>{const wId=borrowingResetHistoryTableBody.dataset.workerId;if(wId&&resetFilter&&resetFilter.value==='specific-date')await displayBorrowingResetHistory(wId);});}
+            
+            async function getExpenseCategories(){return await getData(LS_KEYS.EXPENSE_CATEGORIES)||[];}
+            async function saveExpenseCategories(cats){await setData(LS_KEYS.EXPENSE_CATEGORIES,cats);}
+            async function populateExpenseCategoryDropdown(){if(!expenseCategorySelect)return;const cats=await getExpenseCategories();const curVal=expenseCategorySelect.value;expenseCategorySelect.innerHTML='<option value="">-- Select --</option>';cats.sort((a,b)=>a.name.localeCompare(b.name));cats.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;expenseCategorySelect.appendChild(o);});if(curVal&&expenseCategorySelect.querySelector(`option[value="${curVal}"]`))expenseCategorySelect.value=curVal;}
+
+            async function displayManageableCategories(){
+                if(!categoryListDisplay)return true; 
+                categoryListDisplay.innerHTML='<p style="text-align:center;padding:1rem;">Loading...</p>';
+                const cats=await getExpenseCategories();categoryListDisplay.innerHTML='';
+                if(cats.length===0){
+                    categoryListDisplay.innerHTML='<p style="text-align:center;padding:1rem;">No categories defined. Add them via the "Add Expense" form.</p>';
+                    return false; 
+                }
+                cats.sort((a,b)=>a.name.localeCompare(b.name));cats.forEach(c=>{const iD=document.createElement('div');iD.className='category-list-item';
+                iD.innerHTML=`<span>${c.name}</span><div class="action-buttons"><button class="button button-warning button-small edit-category-btn" data-id="${c.id}" data-name="${c.name}"><i class="fas fa-edit"></i></button><button class="button button-danger button-small delete-category-btn" data-id="${c.id}" data-name="${c.name}"><i class="fas fa-trash"></i></button></div>`;
+                categoryListDisplay.appendChild(iD);});attachCategoryActionListeners();
+                return true; 
+            }
+            function attachCategoryActionListeners(){
+                document.querySelectorAll('.edit-category-btn').forEach(b=>{b.removeEventListener('click',handleEditCategory);b.addEventListener('click',handleEditCategory)});
+                document.querySelectorAll('.delete-category-btn').forEach(b=>{b.removeEventListener('click',handleDeleteCategory);b.addEventListener('click',handleDeleteCategory)});
+            }
+            async function handleEditCategory(e){const tB=e.target.closest('.edit-category-btn');if(!tB)return;const cId=tB.dataset.id,cName=tB.dataset.name;document.getElementById('add-category-modal-title').textContent='Edit Category';document.getElementById('edit-category-id').value=cId;document.getElementById('new-category-name').value=cName;clearMessages('add-category-modal-message-area');openModal('add-category-modal');document.getElementById('new-category-name').focus();}
+            async function handleDeleteCategory(e){
+                const tB=e.target.closest('.delete-category-btn');if(!tB)return;const cId=tB.dataset.id,cName=tB.dataset.name;
+                if(confirm(`Delete category "${cName}"?`)){const exps=await getData(LS_KEYS.EXPENSES);if(exps.some(ex=>ex.categoryId===cId)){showMessage('error',`"${cName}" is used by expenses.`,'manage-categories-modal-message-area',true);return;}
+                let cats=await getExpenseCategories();cats=cats.filter(c=>c.id!==cId);await backupDataForKey(LS_KEYS.EXPENSE_CATEGORIES);await saveExpenseCategories(cats);showMessage('success',`"${cName}" deleted.`,'manage-categories-modal-message-area');await displayManageableCategories();await populateExpenseCategoryDropdown();}}
+
+            if(addExpenseBtn){addExpenseBtn.onclick=async()=>{clearMessages('expense-modal-message-area');if(expenseForm)expenseForm.reset();document.getElementById('expense-date').value=getTodayDate();await populateExpenseCategoryDropdown();openModal('expense-modal');};}
+            if(openAddCategoryModalBtn){openAddCategoryModalBtn.onclick=()=>{document.getElementById('add-category-modal-title').textContent='Add New Category';document.getElementById('edit-category-id').value='';clearMessages('add-category-modal-message-area');if(addCategoryForm)addCategoryForm.reset();openModal('add-category-modal');document.getElementById('new-category-name').focus();};}
+            
+            if(addCategoryForm){addCategoryForm.addEventListener('submit',async e=>{e.preventDefault();const eId=document.getElementById('edit-category-id').value;const nIn=document.getElementById('new-category-name'),name=nIn.value.trim();if(!name){showMessage('error','Name empty.','add-category-modal-message-area');return;}
+            let cats=await getExpenseCategories();if(cats.some(c=>c.name.toLowerCase()===name.toLowerCase()&&c.id!==eId)){showMessage('error',`"${name}" exists.`,'add-category-modal-message-area');return;}
+            await backupDataForKey(LS_KEYS.EXPENSE_CATEGORIES);let msg='',newCId=null;
+            if(eId){const idx=cats.findIndex(c=>c.id===eId);if(idx>-1){const oN=cats[idx].name;cats[idx].name=name;cats[idx].updatedAt=new Date().toISOString();let exps=await getData(LS_KEYS.EXPENSES);let exM=false;exps.forEach(ex=>{if(ex.categoryId===eId){ex.categoryName=name;exM=true;}});if(exM){await backupDataForKey(LS_KEYS.EXPENSES);await setData(LS_KEYS.EXPENSES,exps);}msg=`"${oN}" to "${name}".`;}}
+            else{const nC={id:generateId('CAT'),name,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};cats.push(nC);newCId=nC.id;msg=`"${name}" added.`;}
+            await saveExpenseCategories(cats);await populateExpenseCategoryDropdown();await displayManageableCategories();showMessage('success',msg,'add-category-modal-message-area');
+            setTimeout(()=>{closeModal('add-category-modal');if(document.getElementById('expense-modal').style.display==='block'&&newCId){expenseCategorySelect.value=newCId;expenseCategorySelect.focus();}},1200);});}
+
+            if(expenseForm){expenseForm.addEventListener('submit',async e=>{e.preventDefault();const d=document.getElementById('expense-description').value.trim(),aI=document.getElementById('expense-amount').value,cId=expenseCategorySelect.value,dt=document.getElementById('expense-date').value;if(!d||!aI||!cId||!dt){showMessage('error','All fields required.','expense-modal-message-area');return;}const a=parseFloat(aI);if(isNaN(a)||a<=0){showMessage('error','Valid amount.','expense-modal-message-area');return;}const cN=expenseCategorySelect.options[expenseCategorySelect.selectedIndex].text;const nE={id:generateId('EXP'),description:d,amount:a,categoryId:cId,categoryName:cN,date:dt,createdAt:new Date().toISOString()};let E=await getData(LS_KEYS.EXPENSES);E.push(nE);await backupDataForKey(LS_KEYS.EXPENSES);await setData(LS_KEYS.EXPENSES,E);showMessage('success',`Expense added.`,'message-area');closeModal('expense-modal');});}
+            
+            if(manageCategoriesBtn){manageCategoriesBtn.onclick=async()=>{clearMessages('manage-categories-modal-message-area');await displayManageableCategories();openModal('manage-categories-modal');};}
+
+            const logoutLink=document.getElementById('logout-link');if(logoutLink){logoutLink.onclick=e=>{e.preventDefault();handleLogout();};}
+            window.addEventListener('storage',async e=>{if(useLocalStorage){if(e.key===LS_KEYS.WORKERS&&e.newValue===null){if(await restoreDataForKey(LS_KEYS.WORKERS))showMessage('success','Worker data restored.');else showMessage('error','Worker data lost.');await displayWorkers();} else if(e.key===LS_KEYS.EXPENSE_CATEGORIES&&e.newValue===null){await restoreDataForKey(LS_KEYS.EXPENSE_CATEGORIES);await populateExpenseCategoryDropdown();await displayManageableCategories();} else if(e.key===LS_KEYS.EXPENSES&&e.newValue===null){await restoreDataForKey(LS_KEYS.EXPENSES);}}});
+
+            await displayWorkers();
+            
+        });
+    </script>
+</body>
+</html>

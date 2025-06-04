@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Management - OZON DETAILING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" href="images/transport.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        #logout-link {
+            color: #e74c3c;
+        }
+
+        #logout-link:hover {
+            background-color: #c0392b;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        main h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        #totals-area {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        #totals-area span {
+            font-weight: bold;
+        }
+
+        #totals-area .number {
+            font-family: monospace;
+        }
+
+        .filter-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 1rem 0;
+        }
+
+        #filters-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        #filters-area .form-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #filters-area input[type="text"],
+        #filters-area input[type="date"] {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 200px;
+        }
+
+        #filters-area input[type="date"] {
+            width: 150px;
+        }
+
+        #filters-area label {
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        #custom-date-range {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        #filters-area .button {
+            padding: 0.5rem 1rem;
+        }
+
+        #message-area,
+        #purchase-modal-message-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        td.number {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        td.wrap {
+            word-break: break-word;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .action-buttons button {
+            margin-right: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .button-secondary:hover {
+            background-color: #6c757d;
+        }
+
+        .button-warning {
+            background-color: #f39c12;
+        }
+
+        .button-warning:hover {
+            background-color: #e67e22;
+        }
+
+        .button-danger {
+            background-color: #e74c3c;
+        }
+
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .button-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            header h1 a {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul li a {
+                padding: 0.5rem;
+                width: 100%;
+                text-align: left;
+            }
+
+            main {
+                margin: 1rem;
+            }
+
+            .modal-content {
+                margin: 20% auto;
+                padding: 1.5rem;
+            }
+
+            #totals-area {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .filter-card {
+                padding: 0.75rem;
+            }
+
+            #filters-area {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            #filters-area input[type="text"],
+            #filters-area input[type="date"] {
+                width: 100%;
+            }
+
+            .radio-group {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            #custom-date-range {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+
+            .action-buttons button {
+                margin-right: 0.3rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="dashboard.html">OZON DETAILING</a></h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="billing.html">Billing</a></li>
+                <li><a href="stock.html">Stock</a></li>
+                <li><a href="salary.html">Salaries</a></li>
+                <li><a href="expenses.html">Expenses</a></li>
+                <li><a href="purchases.html" class="active">Purchases</a></li>
+                <li><a href="view_bills.html">View Bills</a></li>
+                <li><a href="warrantypackage.html">Warranty Packages</a></li>
+                <li><a href="productwarranty.html">Product Warranties</a></li>
+                <li><a href="#" id="logout-link">Logout (<span id="logged-in-user"></span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="content-section">
+            <div id="totals-area">
+                <span>Total Paid: <span class="number" id="total-paid">₹0.00</span></span>
+                <span>Total To Be Paid: <span class="number" id="total-to-be-paid">₹0.00</span></span>
+            </div>
+            <h2>Purchase Management</h2>
+            <div id="message-area"></div>
+            <button id="add-purchase-btn" class="button"><i class="fas fa-plus"></i> Add New Purchase</button>
+            <div class="filter-card">
+                <div id="filters-area">
+                    <div class="form-group">
+                        <input type="text" id="search-input" placeholder="Search by item name..." aria-label="Search purchases by item name">
+                    </div>
+                    <div class="form-group">
+                        <div class="radio-group">
+                            <label><input type="radio" name="date-filter" value="all" checked> All</label>
+                            <label><input type="radio" name="date-filter" value="today"> Today</label>
+                            <label><input type="radio" name="date-filter" value="yesterday"> Yesterday</label>
+                            <label><input type="radio" name="date-filter" value="custom"> Custom Range</label>
+                        </div>
+                    </div>
+                    <div class="form-group" id="custom-date-range" style="display: none;">
+                        <label for="start-date">Start Date:</label>
+                        <input type="date" id="start-date" aria-label="Start date for custom range">
+                        <label for="end-date">End Date:</label>
+                        <input type="date" id="end-date" aria-label="End date for custom range">
+                    </div>
+                    <button id="clear-filters-btn" class="button button-secondary"><i class="fas fa-times"></i> Clear Filters</button>
+                </div>
+            </div>
+            <div style="overflow-x: auto; margin-top: 1.5rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th class="wrap">Item Name</th>
+                            <th class="number">Quantity</th>
+                            <th>Unit</th>
+                            <th class="number">Per Unit Price (₹)</th>
+                            <th class="number">Paid (₹)</th>
+                            <th class="number">To Be Paid (₹)</th>
+                            <th class="number">Total (₹)</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purchases-table-body">
+                        <tr><td colspan="10" style="text-align:center;">Loading purchases...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div id="purchase-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" aria-label="Close modal">×</span>
+                <h3 id="purchase-modal-title">Add Purchase</h3>
+                <div id="purchase-modal-message-area"></div>
+                <form id="purchase-form">
+                    <input type="hidden" id="purchase-id">
+                    <div class="form-group">
+                        <label for="item-name">Item Name *:</label>
+                        <input type="text" id="item-name" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity *:</label>
+                        <input type="number" id="quantity" step="0.01" min="0.01" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="unit-type">Unit Type *:</label>
+                        <select id="unit-type" required aria-required="true">
+                            <option value="" disabled selected>Select Unit</option>
+                            <option value="kg">kg</option>
+                            <option value="unit">unit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="per-unit-price">Per Unit Price (₹) *:</label>
+                        <input type="number" id="per-unit-price" step="0.01" min="0" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="paid-amount">Money Paid to Seller (₹) *:</label>
+                        <input type="number" id="paid-amount" step="0.01" min="0" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="to-be-paid">Money to Be Paid (₹) *:</label>
+                        <input type="number" id="to-be-paid" step="0.01" min="0" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="purchase-date">Purchase Date:</label>
+                        <input type="date" id="purchase-date" aria-label="Purchase date">
+                    </div>
+                    <button type="submit" id="save-purchase-btn" class="button"><i class="fas fa-save"></i> Save Purchase</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('purchase-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const LS_KEYS = {
+                USERS: 'workshop_users',
+                CURRENT_USER: 'workshop_currentUser',
+                PURCHASES: 'workshop_purchases'
+            };
+
+            function getData(key) {
+                const data = localStorage.getItem(key);
+                try {
+                    return data ? JSON.parse(data) : [];
+                } catch (e) {
+                    console.error(`Error parsing LS key "${key}":`, e);
+                    return [];
+                }
+            }
+
+            function setData(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (e) {
+                    console.error(`Error setting LS key "${key}":`, e);
+                }
+            }
+
+            function getCurrentUser() {
+                return localStorage.getItem(LS_KEYS.CURRENT_USER);
+            }
+
+            function setCurrentUser(email) {
+                if (email) localStorage.setItem(LS_KEYS.CURRENT_USER, email);
+                else localStorage.removeItem(LS_KEYS.CURRENT_USER);
+            }
+
+            function showMessage(type, message, areaId = 'message-area', persistent = false) {
+                const area = document.getElementById(areaId);
+                if (!area) return;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message message-${type}`;
+                messageDiv.textContent = message;
+                area.appendChild(messageDiv);
+                if (!persistent) setTimeout(() => messageDiv.remove(), 5000);
+            }
+
+            function clearMessages(areaId = 'message-area') {
+                const area = document.getElementById(areaId);
+                if (area) area.querySelectorAll('.message').forEach(msg => msg.remove());
+            }
+
+            function openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = 'block';
+                    const firstInput = modal.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }
+            }
+
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = 'none';
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    clearMessages(modalId + '-message-area');
+                    const idField = modal.querySelector('input[type="hidden"]');
+                    if (idField) idField.value = '';
+                    const unitSelect = document.getElementById('unit-type');
+                    if (unitSelect) unitSelect.value = '';
+                }
+            }
+
+            function checkLogin() {
+                const user = getCurrentUser();
+                if (!user) {
+                    const publicPages = ['login.html', 'signup.html', 'index.html', ''];
+                    const currentPage = window.location.pathname.split('/').pop();
+                    if (!publicPages.includes(currentPage)) {
+                        window.location.href = 'login.html';
+                    }
+                    return false;
+                }
+                const userDisplay = document.getElementById('logged-in-user');
+                if (userDisplay) userDisplay.textContent = user;
+                return true;
+            }
+
+            function handleLogout() {
+                setCurrentUser(null);
+                window.location.href = 'login.html';
+            }
+
+            function generateId(prefix = '') {
+                return prefix + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+            }
+
+            function debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            function getTodayDate() {
+                return new Date().toISOString().split('T')[0];
+            }
+
+            function getYesterdayDate() {
+                const date = new Date();
+                date.setDate(date.getDate() - 1);
+                return date.toISOString().split('T')[0];
+            }
+
+            function filterPurchases(purchases, searchTerm, dateFilter, startDate, endDate) {
+                let filtered = purchases;
+
+                // Apply search filter (case-insensitive)
+                if (searchTerm) {
+                    filtered = filtered.filter(purchase =>
+                        purchase.itemName.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+
+                // Apply date filter
+                if (dateFilter === 'today') {
+                    filtered = filtered.filter(purchase =>
+                        purchase.purchaseDate === getTodayDate()
+                    );
+                } else if (dateFilter === 'yesterday') {
+                    filtered = filtered.filter(purchase =>
+                        purchase.purchaseDate === getYesterdayDate()
+                    );
+                } else if (dateFilter === 'custom' && startDate && endDate && startDate <= endDate) {
+                    filtered = filtered.filter(purchase =>
+                        purchase.purchaseDate &&
+                        purchase.purchaseDate >= startDate &&
+                        purchase.purchaseDate <= endDate
+                    );
+                } else if (dateFilter === 'all') {
+                    // Include all purchases, even those without purchaseDate
+                    filtered = filtered;
+                }
+
+                return filtered.sort((a, b) => a.itemName.localeCompare(b.itemName));
+            }
+
+            function displayTotals(purchases) {
+                const totalPaid = purchases.reduce((sum, purchase) => sum + parseFloat(purchase.paidAmount || 0), 0).toFixed(2);
+                const totalToBePaid = purchases.reduce((sum, purchase) => sum + parseFloat(purchase.toBePaid || 0), 0).toFixed(2);
+                document.getElementById('total-paid').textContent = `₹${totalPaid}`;
+                document.getElementById('total-to-be-paid').textContent = `₹${totalToBePaid}`;
+            }
+
+            if (!checkLogin()) return;
+
+            const purchasesTableBody = document.getElementById('purchases-table-body');
+            const addPurchaseBtn = document.getElementById('add-purchase-btn');
+            const purchaseForm = document.getElementById('purchase-form');
+            const purchaseModalTitle = document.getElementById('purchase-modal-title');
+            const searchInput = document.getElementById('search-input');
+            const dateFilterRadios = document.querySelectorAll('input[name="date-filter"]');
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const customDateRange = document.getElementById('custom-date-range');
+            const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+            let filterState = {
+                searchTerm: '',
+                dateFilter: 'all',
+                startDate: '',
+                endDate: ''
+            };
+
+            const modalCloses = document.querySelectorAll('.modal-close');
+            modalCloses.forEach(close => {
+                close.addEventListener('click', () => closeModal(close.closest('.modal').id));
+            });
+
+            window.onclick = function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target == modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            };
+
+            function displayPurchases() {
+                if (!purchasesTableBody) return;
+                const purchases = getData(LS_KEYS.PURCHASES);
+                const filteredPurchases = filterPurchases(
+                    purchases,
+                    filterState.searchTerm,
+                    filterState.dateFilter,
+                    filterState.startDate,
+                    filterState.endDate
+                );
+                purchasesTableBody.innerHTML = '';
+
+                if (filteredPurchases.length === 0) {
+                    const message = filterState.searchTerm ? 'No matches found for search.' : 'No purchases found.';
+                    purchasesTableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">${message}</td></tr>`;
+                } else {
+                    filteredPurchases.forEach(purchase => {
+                        const total = (parseFloat(purchase.paidAmount) + parseFloat(purchase.toBePaid)).toFixed(2);
+                        const row = purchasesTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${purchase.id}</td>
+                            <td class="wrap">${purchase.itemName}</td>
+                            <td class="number">${parseFloat(purchase.quantity).toFixed(2)}</td>
+                            <td>${purchase.unitType}</td>
+                            <td class="number">${parseFloat(purchase.perUnitPrice).toFixed(2)}</td>
+                            <td class="number">${parseFloat(purchase.paidAmount).toFixed(2)}</td>
+                            <td class="number">${parseFloat(purchase.toBePaid).toFixed(2)}</td>
+                            <td class="number">${total}</td>
+                            <td>${purchase.purchaseDate || 'N/A'}</td>
+                            <td class="action-buttons">
+                                <button class="button button-warning button-small edit-purchase-btn" data-id="${purchase.id}" aria-label="Edit purchase ${purchase.itemName}"><i class="fas fa-edit"></i> Edit</button>
+                                <button class="button button-danger button-small delete-purchase-btn" data-id="${purchase.id}" aria-label="Delete purchase ${purchase.itemName}"><i class="fas fa-trash"></i> Delete</button>
+                            </td>
+                        `;
+                    });
+                    attachPurchaseActionListeners();
+                }
+                displayTotals(filteredPurchases);
+            }
+
+            function attachPurchaseActionListeners() {
+                document.querySelectorAll('.edit-purchase-btn').forEach(button => {
+                    button.removeEventListener('click', handleEditPurchase);
+                    button.addEventListener('click', handleEditPurchase);
+                });
+                document.querySelectorAll('.delete-purchase-btn').forEach(button => {
+                    button.removeEventListener('click', handleDeletePurchase);
+                    button.addEventListener('click', handleDeletePurchase);
+                });
+            }
+
+            function handleEditPurchase(event) {
+                const purchaseId = event.target.getAttribute('data-id') || event.target.parentElement.getAttribute('data-id');
+                const purchases = getData(LS_KEYS.PURCHASES);
+                const purchase = purchases.find(p => p.id === purchaseId);
+                if (purchase && purchaseForm) {
+                    clearMessages('purchase-modal-message-area');
+                    purchaseModalTitle.textContent = 'Edit Purchase';
+                    document.getElementById('purchase-id').value = purchase.id;
+                    document.getElementById('item-name').value = purchase.itemName;
+                    document.getElementById('quantity').value = purchase.quantity;
+                    document.getElementById('unit-type').value = purchase.unitType;
+                    document.getElementById('per-unit-price').value = purchase.perUnitPrice;
+                    document.getElementById('paid-amount').value = purchase.paidAmount;
+                    document.getElementById('to-be-paid').value = purchase.toBePaid;
+                    document.getElementById('purchase-date').value = purchase.purchaseDate || '';
+                    openModal('purchase-modal');
+                }
+            }
+
+            function handleDeletePurchase(event) {
+                const purchaseId = event.target.getAttribute('data-id') || event.target.parentElement.getAttribute('data-id');
+                const purchases = getData(LS_KEYS.PURCHASES);
+                const purchase = purchases.find(p => p.id === purchaseId);
+                if (purchase && confirm(`Are you sure you want to delete purchase for ${purchase.itemName} (ID: ${purchaseId})?`)) {
+                    let updatedPurchases = purchases.filter(p => p.id !== purchaseId);
+                    setData(LS_KEYS.PURCHASES, updatedPurchases);
+                    showMessage('success', `Purchase for ${purchase.itemName} deleted successfully.`);
+                    displayPurchases();
+                }
+            }
+
+            if (addPurchaseBtn) {
+                addPurchaseBtn.onclick = () => {
+                    if (purchaseForm) purchaseForm.reset();
+                    clearMessages('purchase-modal-message-area');
+                    purchaseModalTitle.textContent = 'Add Purchase';
+                    document.getElementById('purchase-id').value = '';
+                    document.getElementById('unit-type').value = '';
+                    openModal('purchase-modal');
+                };
+            }
+
+            if (purchaseForm) {
+                purchaseForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const purchaseId = document.getElementById('purchase-id').value;
+                    const itemName = document.getElementById('item-name').value.trim();
+                    const quantity = parseFloat(document.getElementById('quantity').value);
+                    const unitType = document.getElementById('unit-type').value;
+                    const perUnitPrice = parseFloat(document.getElementById('per-unit-price').value);
+                    const paidAmount = parseFloat(document.getElementById('paid-amount').value);
+                    const toBePaid = parseFloat(document.getElementById('to-be-paid').value);
+                    const purchaseDate = document.getElementById('purchase-date').value;
+
+                    if (!itemName) {
+                        showMessage('error', 'Item Name is required.', 'purchase-modal-message-area');
+                        document.getElementById('item-name').focus();
+                        return;
+                    }
+                    if (isNaN(quantity) || quantity < 0.01) {
+                        showMessage('error', 'Quantity must be at least 0.01.', 'purchase-modal-message-area');
+                        document.getElementById('quantity').focus();
+                        return;
+                    }
+                    if (!unitType || !['kg', 'unit'].includes(unitType)) {
+                        showMessage('error', 'Please select a valid Unit Type.', 'purchase-modal-message-area');
+                        document.getElementById('unit-type').focus();
+                        return;
+                    }
+                    if (isNaN(perUnitPrice) || perUnitPrice < 0) {
+                        showMessage('error', 'Per Unit Price must be non-negative.', 'purchase-modal-message-area');
+                        document.getElementById('per-unit-price').focus();
+                        return;
+                    }
+                    if (isNaN(paidAmount) || paidAmount < 0) {
+                        showMessage('error', 'Money Paid must be non-negative.', 'purchase-modal-message-area');
+                        document.getElementById('paid-amount').focus();
+                        return;
+                    }
+                    if (isNaN(toBePaid) || toBePaid < 0) {
+                        showMessage('error', 'Money to Be Paid must be non-negative.', 'purchase-modal-message-area');
+                        document.getElementById('to-be-paid').focus();
+                        return;
+                    }
+
+                    let purchases = getData(LS_KEYS.PURCHASES);
+                    if (purchaseId) {
+                        const index = purchases.findIndex(p => p.id === purchaseId);
+                        if (index > -1) {
+                            purchases[index] = {
+                                ...purchases[index],
+                                itemName,
+                                quantity,
+                                unitType,
+                                perUnitPrice,
+                                paidAmount,
+                                toBePaid,
+                                purchaseDate: purchaseDate || null
+                            };
+                            showMessage('success', `Purchase for ${itemName} updated.`);
+                        }
+                    } else {
+                        const newPurchase = {
+                            id: generateId('PUR'),
+                            itemName,
+                            quantity,
+                            unitType,
+                            perUnitPrice,
+                            paidAmount,
+                            toBePaid,
+                            purchaseDate: purchaseDate || null
+                        };
+                        purchases.push(newPurchase);
+                        showMessage('success', `Purchase for ${itemName} added successfully.`);
+                    }
+
+                    setData(LS_KEYS.PURCHASES, purchases);
+                    closeModal('purchase-modal');
+                    displayPurchases();
+                });
+            }
+
+            // Filter and Search Handlers
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(() => {
+                    filterState.searchTerm = searchInput.value.trim();
+                    displayPurchases();
+                }, 300));
+            }
+
+            if (dateFilterRadios) {
+                dateFilterRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        filterState.dateFilter = radio.value;
+                        customDateRange.style.display = radio.value === 'custom' ? 'flex' : 'none';
+                        if (radio.value !== 'custom') {
+                            filterState.startDate = '';
+                            filterState.endDate = '';
+                            startDateInput.value = '';
+                            endDateInput.value = '';
+                        }
+                        displayPurchases();
+                    });
+                });
+            }
+
+            if (startDateInput && endDateInput) {
+                startDateInput.addEventListener('change', () => {
+                    filterState.startDate = startDateInput.value;
+                    if (filterState.endDate && filterState.startDate > filterState.endDate) {
+                        showMessage('error', 'Start date must be before or equal to end date.', 'message-area');
+                        startDateInput.value = filterState.endDate;
+                        filterState.startDate = filterState.endDate;
+                    }
+                    displayPurchases();
+                });
+
+                endDateInput.addEventListener('change', () => {
+                    filterState.endDate = endDateInput.value;
+                    if (filterState.startDate && filterState.endDate < filterState.startDate) {
+                        showMessage('error', 'End date must be after or equal to start date.', 'message-area');
+                        endDateInput.value = filterState.startDate;
+                        filterState.endDate = filterState.startDate;
+                    }
+                    displayPurchases();
+                });
+            }
+
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', () => {
+                    filterState = {
+                        searchTerm: '',
+                        dateFilter: 'all',
+                        startDate: '',
+                        endDate: ''
+                    };
+                    searchInput.value = '';
+                    document.querySelector('input[name="date-filter"][value="all"]').checked = true;
+                    startDateInput.value = '';
+                    endDateInput.value = '';
+                    customDateRange.style.display = 'none';
+                    displayPurchases();
+                });
+            }
+
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleLogout();
+                });
+            }
+
+            displayPurchases();
+        });
+    </script>
+</body>
+</html>

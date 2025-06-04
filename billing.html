@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Create Bill - OZON DETAILING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link rel="icon" href="images/transport.png">
+    <style>
+        /* Unchanged CSS styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        #logout-link {
+            color: #e74c3c;
+        }
+
+        #logout-link:hover {
+            background-color: #c0392b;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h2#billing-page-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        #edit-mode-indicator {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            border: 1px solid #fde68a;
+        }
+
+        #edit-mode-indicator.hidden {
+            display: none;
+        }
+
+        #message-area,
+        #stock-error-area,
+        #pdf-modal-message-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .message-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        form#billing-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input.invalid,
+        .form-group input:invalid:not(:focus) {
+            border-color: #e74c3c;
+        }
+
+        .items-section {
+            margin-top: 1rem;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            padding: 1rem;
+            border-radius: 4px;
+            background: #f9fafb;
+        }
+
+        .item-row:hover {
+            background: #f1f3f5;
+        }
+
+        .item-row-col1 { flex: 3; min-width: 200px; }
+        .item-row-col2 { flex: 1; min-width: 80px; max-width: 120px; }
+        .item-row-col3 { flex: 1; min-width: 100px; max-width: 140px; }
+        .item-row-col4 { margin-left: auto; padding-bottom: 0.5rem; }
+
+        .item-row label {
+            font-size: 0.85rem;
+        }
+
+        .stock-error-msg {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+
+        .total-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+            text-align: right;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .total-section hr {
+            border-top: 1px dashed #ccc;
+            margin: 0.5rem 0;
+            width: 200px;
+            float: right;
+            clear: both;
+        }
+
+        .total-section strong {
+            font-size: 1.25rem;
+            color: #2c3e50;
+        }
+
+        .final-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .button-secondary:hover {
+            background-color: #6c757d;
+        }
+
+        .button-danger {
+            background-color: #e74c3c;
+        }
+
+        .button-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .button-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        #add-item-btn {
+            background-color: #2ecc71;
+        }
+
+        #add-item-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .modal-content input:focus,
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .modal-content .preview-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .modal-content .preview-section p {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-content .preview-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .modal-content .preview-section th,
+        .modal-content .preview-section td {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+
+        .modal-content .preview-section th {
+            background: #3498db;
+            color: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            header h1 a {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul li a {
+                padding: 0.5rem;
+                width: 100%;
+                text-align: left;
+            }
+
+            main {
+                margin: 1rem;
+            }
+
+            .form-container {
+                padding: 1.5rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-group {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .item-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .item-row-col1, .item-row-col2, .item-row-col3, .item-row-col4 {
+                min-width: unset;
+                max-width: unset;
+                width: 100%;
+                flex: none;
+            }
+
+            .item-row-col4 {
+                margin-left: 0;
+                text-align: right;
+            }
+
+            .total-section {
+                text-align: left;
+            }
+
+            .total-section hr {
+                float: none;
+                width: 100%;
+            }
+
+            .final-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .final-actions button {
+                width: 100%;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="dashboard.html">OZON DETAILING</a></h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="billing.html" class="active">Billing</a></li>
+                <li><a href="stock.html">Stock</a></li>
+                <li><a href="salary.html">Salaries</a></li>
+                <li><a href="expenses.html">Expenses</a></li>
+                <li><a href="view_bills.html">View Bills</a></li>
+                <li><a href="warrantypackage.html">Warranty Packages</a></li>
+                <li><a href="#" id="logout-link">Logout (<span id="logged-in-user"></span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="form-container">
+            <h2 id="billing-page-title">Create New Bill / Invoice</h2>
+            <div id="edit-mode-indicator" class="hidden">EDITING BILL</div>
+            <div id="message-area"></div>
+            <div id="stock-error-area"></div>
+            <form id="billing-form">
+                <input type="hidden" id="editing-bill-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer_name">Customer Name *:</label>
+                        <input type="text" id="customer_name" name="customer_name" required aria-required="true" list="customer-names-datalist">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_mobile">Mobile Number:</label>
+                        <input type="tel" id="customer_mobile" name="customer_mobile" placeholder="Optional" aria-label="Customer mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="bill_date">Bill Date *:</label>
+                        <input type="date" id="bill_date" name="bill_date" required aria-required="true">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="car_name">Car Name / Model *:</label>
+                        <input type="text" id="car_name" name="car_name" required aria-required="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="number_plate">Number Plate *:</label>
+                        <input type="text" id="number_plate" name="number_plate" required aria-required="true">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="service_details">Service Details / Notes:</label>
+                    <textarea id="service_details" name="service_details" placeholder="Describe services..." aria-label="Service details"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="labour_cost">Labour Cost (₹):</label>
+                    <input type="number" id="labour_cost" name="labour_cost" step="0.01" min="0" value="0" placeholder="Enter labour cost" aria-label="Labour cost">
+                </div>
+                <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;">
+                <h3>Items Sold / Used</h3>
+                <div id="items-list" class="items-section"></div>
+                <button type="button" id="add-item-btn" class="button button-small"><i class="fas fa-plus"></i> Add Item</button>
+                <datalist id="stock-items-datalist"></datalist>
+                <datalist id="customer-names-datalist"></datalist>
+                <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payment_mode">Mode of Payment *:</label>
+                        <select id="payment_mode" name="payment_mode" required aria-required="true">
+                            <option value="">-- Select --</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Online">Online</option>
+                            <option value="Credit">Credit/Due</option>
+                            <option value="Cash and Online">Cash and Online</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="cash-paid-group">
+                        <label for="cash_paid">Cash Paid (₹):</label>
+                        <input type="number" id="cash_paid" name="cash_paid" step="0.01" min="0" value="0" placeholder="Cash portion (if any)" aria-label="Cash paid">
+                    </div>
+                    <div class="form-group" id="online-paid-group" style="display: none;">
+                        <label for="online_paid">Online Paid (₹):</label>
+                        <input type="number" id="online_paid" name="online_paid" step="0.01" min="0" value="0" placeholder="Online portion (if any)" aria-label="Online paid">
+                    </div>
+                </div>
+                <div class="total-section">
+                    Labour: ₹ <span id="display_labour_cost">0</span> <br>
+                    Items Subtotal: ₹ <span id="items_subtotal">0</span> <br>
+                    <hr>
+                    <strong>Total Amount: ₹ <span id="total_amount">0</span></strong>
+                </div>
+                <div class="final-actions">
+                    <button type="submit" id="generate-bill-btn" class="button"><i class="fas fa-save"></i> Generate & Save Bill</button>
+                    <button type="button" id="generate-pdf-btn" class="button button-secondary"><i class="fas fa-file-pdf"></i> Generate PDF View</button>
+                    <button type="reset" class="button button-secondary"><i class="fas fa-times"></i> Clear Form</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="pdf-preview-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeModal('pdf-preview-modal')" aria-label="Close modal">×</span>
+                <h3>PDF Preview & Options</h3>
+                <div id="pdf-modal-message-area"></div>
+                <div class="preview-section">
+                    <h4>Bill Preview</h4>
+                    <p><strong>Customer:</strong> <span id="preview-customer"></span></p>
+                    <p><strong>Mobile:</strong> <span id="preview-mobile"></span></p>
+                    <p><strong>Bill Date:</strong> <span id="preview-date"></span></p>
+                    <p><strong>Vehicle:</strong> <span id="preview-vehicle"></span></p>
+                    <p><strong>Number Plate:</strong> <span id="preview-plate"></span></p>
+                    <p><strong>Service Details:</strong> <span id="preview-service"></span></p>
+                    <p><strong>Payment Mode:</strong> <span id="preview-payment"></span></p>
+                    <p><strong>Cash Paid:</strong> ₹<span id="preview-cash"></span></p>
+                    <p><strong>Online Paid:</strong> ₹<span id="preview-online"></span></p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Price (₹)</th>
+                                <th>Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-items"></tbody>
+                    </table>
+                    <p><strong>Labour Cost:</strong> ₹<span id="preview-labour"></span></p>
+                    <p><strong>Items Subtotal:</strong> ₹<span id="preview-subtotal"></span></p>
+                    <p><strong>Total Amount:</strong> ₹<span id="preview-total"></span></p>
+                </div>
+                <form id="pdf-options-form">
+                    <div class="form-group">
+                        <label for="workshop-name">Workshop Name:</label>
+                        <input type="text" id="workshop-name" placeholder="Your Workshop Name" value="OZON DETAILING & CAR WASH " aria-label="Workshop name">
+                    </div>
+                    <div class="form-group">
+                        <label for="workshop-address">Workshop Address:</label>
+                        <input type="text" id="workshop-address" placeholder="" value="kolathakkara, manipuram " aria-label="Workshop address">
+                    </div>
+                    <div class="form-group">
+                        <label for="workshop-address2">Workshop Address 2:</label>
+                        <input type="text" id="workshop-address2" placeholder="Puthoor (po) , omassery 673582" value="Puthoor (po) , omassery 673582" aria-label="Workshop address 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="workshop-phone">Phone Number:</label>
+                        <input type="tel" id="workshop-phone" placeholder="+91-XXXXXXXXXX" value="+91-9447405746,+91-9846135714" aria-label="Workshop phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="workshop-email">Email:</label>
+                        <input type="email" id="workshop-email" placeholder="your@email.com" value="ozondetailingkolathakkara@gmail.com" aria-label="Workshop email">
+                    </div>
+                    <div class="form-group">
+                        <label for="pdf-notes">Additional Notes/Terms:</label>
+                        <textarea id="pdf-notes" placeholder="e.g., Payment terms, warranty info" aria-label="Additional notes for PDF"></textarea>
+                    </div>
+                </form>
+                <div class="modal-actions">
+                    <button type="button" id="download-pdf-btn" class="button"><i class="fas fa-download"></i> Download PDF</button>
+                    <button type="button" id="view-pdf-btn" class="button button-secondary"><i class="fas fa-eye"></i> View PDF</button>
+                    <button type="button" class="button button-secondary" onclick="closeModal('pdf-preview-modal')"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 OZON DETAILING</p>
+    </footer>
+
+    <script>
+        const LS_KEYS = { 
+            USERS: 'workshop_users', 
+            CURRENT_USER: 'workshop_currentUser', 
+            STOCK: 'workshop_stock', 
+            BILLS: 'workshop_bills',
+            CUSTOMERS: 'workshop_customers' // New key for customer data
+        };
+        function getData(key) { 
+            const data = localStorage.getItem(key); 
+            try { return data ? JSON.parse(data) : []; } 
+            catch (e) { console.error(`Error parsing LS key "${key}":`, e); return []; } 
+        }
+        function setData(key, data) { 
+            try { localStorage.setItem(key, JSON.stringify(data)); } 
+            catch (e) { console.error(`Error setting LS key "${key}":`, e); } 
+        }
+        function getCurrentUser() { 
+            return localStorage.getItem(LS_KEYS.CURRENT_USER); 
+        }
+        function setCurrentUser(email) { 
+            if (email) { localStorage.setItem(LS_KEYS.CURRENT_USER, email); } 
+            else { localStorage.removeItem(LS_KEYS.CURRENT_USER); } 
+        }
+        function showMessage(type, message, areaId = 'message-area', persistent = false, selectorSuffix = '') { 
+            const area = document.getElementById(areaId); 
+            if (!area) return; 
+            const messageDiv = document.createElement('div'); 
+            const messageClass = `message message-${type} ${selectorSuffix ? 'msg-' + selectorSuffix : ''}`; 
+            messageDiv.className = messageClass.trim(); 
+            messageDiv.innerHTML = message; 
+            area.appendChild(messageDiv); 
+            if (!persistent) { 
+                setTimeout(() => { messageDiv.remove(); }, 7000); 
+            } 
+        }
+        function clearMessages(areaId = 'message-area', selector = '.message') { 
+            const area = document.getElementById(areaId); 
+            if (area) { area.querySelectorAll(selector).forEach(msg => msg.remove()); } 
+        }
+        function checkLogin() { 
+            const user = getCurrentUser(); 
+            if (!user) { 
+                const publicPages = ['login.html', 'signup.html', 'index.html', '']; 
+                const currentPage = window.location.pathname.split('/').pop(); 
+                if (!publicPages.includes(currentPage)) { 
+                    window.location.href = 'login.html'; 
+                } 
+                return false; 
+            } 
+            const userDisplay = document.getElementById('logged-in-user'); 
+            if (userDisplay) userDisplay.textContent = user.split('@')[0]; 
+            return true; 
+        }
+        function handleLogout() { 
+            setCurrentUser(null); 
+            window.location.href = 'login.html'; 
+        }
+        function generateId(prefix = '') { 
+            return prefix + Date.now().toString(36) + Math.random().toString(36).substring(2, 8); 
+        }
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.querySelector('input, button')?.focus();
+            }
+        }
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+            clearMessages(modalId + '-message-area');
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+        }
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => { if (event.target == modal) { closeModal(modal.id); } });
+        }
+
+        let originalBillItems = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkLogin()) return;
+
+            const billingForm = document.getElementById('billing-form');
+            const itemsListDiv = document.getElementById('items-list');
+            const addItemBtn = document.getElementById('add-item-btn');
+            const stockDatalist = document.getElementById('stock-items-datalist');
+            const customerDatalist = document.getElementById('customer-names-datalist'); // New
+            const customerNameInput = document.getElementById('customer_name'); // New
+            const customerMobileInput = document.getElementById('customer_mobile'); // New
+            const carNameInput = document.getElementById('car_name'); // New
+            const numberPlateInput = document.getElementById('number_plate'); // New
+            const labourCostInput = document.getElementById('labour_cost');
+            const displayLabourCost = document.getElementById('display_labour_cost');
+            const itemsSubtotalSpan = document.getElementById('items_subtotal');
+            const totalAmountSpan = document.getElementById('total_amount');
+            const paymentModeSelect = document.getElementById('payment_mode');
+            const cashPaidInput = document.getElementById('cash_paid');
+            const onlinePaidGroup = document.getElementById('online-paid-group');
+            const onlinePaidInput = document.getElementById('online_paid');
+            const saveBillBtn = document.getElementById('generate-bill-btn');
+            const generatePdfBtn = document.getElementById('generate-pdf-btn');
+            const stockErrorArea = document.getElementById('stock-error-area');
+            const editingBillIdInput = document.getElementById('editing-bill-id');
+            const pageTitleElement = document.getElementById('billing-page-title');
+            const editModeIndicator = document.getElementById('edit-mode-indicator');
+            const documentTitleElement = document.getElementById('page-title');
+            const logoutLink = document.getElementById('logout-link');
+            // PDF Modal elements (unchanged for this feature)
+            const pdfModal = document.getElementById('pdf-preview-modal');
+            const pdfOptionsForm = document.getElementById('pdf-options-form');
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            const viewPdfBtn = document.getElementById('view-pdf-btn');
+
+
+            function populateStockDatalist() {
+                if (!stockDatalist) return;
+                const stock = getData(LS_KEYS.STOCK);
+                stockDatalist.innerHTML = '';
+                stock.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = `${item.name} (${item.code}) - Avail: ${item.quantity} @ ₹${parseFloat(item.price || 0).toFixed(2)}`;
+                    option.dataset.price = item.price;
+                    option.dataset.code = item.code;
+                    option.dataset.name = item.name;
+                    option.dataset.available = item.quantity;
+                    stockDatalist.appendChild(option);
+                });
+            }
+
+            // New function to populate customer datalist
+            function populateCustomerDatalist() {
+                if (!customerDatalist) return;
+                const customers = getData(LS_KEYS.CUSTOMERS);
+                customerDatalist.innerHTML = ''; // Clear existing options
+                customers.forEach(cust => {
+                    const option = document.createElement('option');
+                    option.value = cust.name;
+                    // You could store more info in data attributes if needed for quicker access,
+                    // but direct lookup from 'customers' array on selection is also fine.
+                    // option.dataset.mobile = cust.mobile;
+                    // option.dataset.carName = cust.lastKnownCarName;
+                    // option.dataset.numberPlate = cust.lastKnownNumberPlate;
+                    customerDatalist.appendChild(option);
+                });
+            }
+
+            // New function to handle customer name input change for auto-fill
+            function handleCustomerNameInputChange() {
+                const name = customerNameInput.value.trim();
+                if (!name) {
+                    // Optional: Clear related fields if name is erased. 
+                    // For now, let's not clear them automatically to avoid data loss if user is editing.
+                    // customerMobileInput.value = '';
+                    // carNameInput.value = '';
+                    // numberPlateInput.value = '';
+                    return;
+                }
+
+                const customers = getData(LS_KEYS.CUSTOMERS);
+                const matchedCustomer = customers.find(c => c.name.toLowerCase() === name.toLowerCase());
+
+                if (matchedCustomer) {
+                    customerMobileInput.value = matchedCustomer.mobile || '';
+                    carNameInput.value = matchedCustomer.lastKnownCarName || '';
+                    numberPlateInput.value = matchedCustomer.lastKnownNumberPlate || '';
+                }
+                // If no match, fields are not changed, allowing manual entry for a new customer or existing customer with new details.
+            }
+            
+            if (customerNameInput) {
+                customerNameInput.addEventListener('input', handleCustomerNameInputChange);
+            }
+
+
+            function addBillItemRow(item = {}) {
+                if (!itemsListDiv) return;
+                const newItemRow = document.createElement('div');
+                newItemRow.classList.add('item-row');
+                newItemRow.innerHTML = `
+                    <div class="item-row-col1 form-group">
+                        <label>Item *:</label>
+                        <input type="text" class="item-name-input" name="item_name[]" placeholder="Select or type item" list="stock-items-datalist" value="${item.name || ''}" required aria-required="true">
+                        <input type="hidden" class="item-code-hidden" name="item_code[]" value="${item.code || ''}">
+                        <input type="hidden" class="item-clean-name-hidden" name="item_clean_name[]" value="${item.cleanName || item.name || ''}">
+                        <div class="stock-error-msg"></div>
+                    </div>
+                    <div class="item-row-col2 form-group">
+                        <label>Qty *:</label>
+                        <input type="number" class="item-quantity-input" name="item_quantity[]" placeholder="Qty" min="1" value="${item.quantity || 1}" required aria-required="true">
+                    </div>
+                    <div class="item-row-col3 form-group">
+                        <label>Unit Price (₹) *:</label>
+                        <input type="number" class="item-price-input" name="item_price[]" placeholder="Price" step="0.01" min="0" value="${item.price || ''}" required aria-required="true">
+                    </div>
+                    <div class="item-row-col4">
+                        <button type="button" class="remove-item-btn button button-danger button-small" aria-label="Remove item"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                itemsListDiv.appendChild(newItemRow);
+                attachItemRowListeners(newItemRow);
+                validateStockLevels();
+                calculateTotals();
+            }
+
+            function attachItemRowListeners(row) {
+                const removeBtn = row.querySelector('.remove-item-btn');
+                const nameInput = row.querySelector('.item-name-input');
+                const qtyInput = row.querySelector('.item-quantity-input');
+                const priceInput = row.querySelector('.item-price-input');
+                const codeHidden = row.querySelector('.item-code-hidden');
+                const cleanNameHidden = row.querySelector('.item-clean-name-hidden');
+
+                if (removeBtn) {
+                    removeBtn.onclick = () => { 
+                        row.remove(); 
+                        validateStockLevels(); 
+                        calculateTotals(); 
+                    };
+                }
+                if (nameInput && stockDatalist) {
+                    nameInput.addEventListener('change', () => {
+                        const selectedOption = Array.from(stockDatalist.options).find(opt => opt.value === nameInput.value);
+                        if (selectedOption) {
+                            priceInput.value = parseFloat(selectedOption.dataset.price || 0).toFixed(2);
+                            codeHidden.value = selectedOption.dataset.code || '';
+                            cleanNameHidden.value = selectedOption.dataset.name || '';
+                            const availableQty = parseInt(selectedOption.dataset.available || 0);
+                            qtyInput.max = availableQty;
+                            qtyInput.title = `Max available: ${availableQty}`;
+                            if (parseInt(qtyInput.value) > availableQty) {
+                                qtyInput.value = availableQty > 0 ? availableQty : 1;
+                            }
+                        } else {
+                            codeHidden.value = '';
+                            cleanNameHidden.value = '';
+                            qtyInput.removeAttribute('max');
+                            qtyInput.removeAttribute('title');
+                        }
+                        validateStockLevels();
+                        calculateTotals();
+                    });
+                }
+                if (qtyInput) {
+                    qtyInput.addEventListener('input', () => { 
+                        validateStockLevels(); 
+                        calculateTotals(); 
+                    });
+                }
+                if (priceInput) {
+                    priceInput.addEventListener('input', calculateTotals);
+                }
+            }
+
+            if (addItemBtn) { 
+                addItemBtn.onclick = () => addBillItemRow(); 
+            }
+
+            function calculateTotals() {
+                let itemsSubtotal = 0;
+                const itemRows = itemsListDiv.querySelectorAll('.item-row');
+                itemRows.forEach(row => {
+                    const quantity = parseInt(row.querySelector('.item-quantity-input')?.value || 0);
+                    const price = parseFloat(row.querySelector('.item-price-input')?.value || 0);
+                    if (!isNaN(quantity) && !isNaN(price) && quantity > 0 && price >= 0) {
+                        itemsSubtotal += quantity * price;
+                    }
+                });
+
+                const labourCost = parseFloat(labourCostInput?.value || 0);
+                const validLabourCost = isNaN(labourCost) || labourCost < 0 ? 0 : labourCost;
+                const totalAmount = validLabourCost + itemsSubtotal;
+
+                if (displayLabourCost) displayLabourCost.textContent = validLabourCost.toFixed(2);
+                if (itemsSubtotalSpan) itemsSubtotalSpan.textContent = itemsSubtotal.toFixed(2);
+                if (totalAmountSpan) totalAmountSpan.textContent = totalAmount.toFixed(2);
+            }
+
+            if (labourCostInput) { 
+                labourCostInput.addEventListener('input', calculateTotals); 
+            }
+
+            function togglePaymentFields() {
+                const paymentMode = paymentModeSelect.value;
+                cashPaidInput.disabled = paymentMode === 'Online';
+                cashPaidInput.value = paymentMode === 'Online' ? '0' : cashPaidInput.value;
+                onlinePaidGroup.style.display = paymentMode === 'Cash and Online' || paymentMode === 'Online' ? 'block' : 'none';
+                if (paymentMode !== 'Cash and Online' && paymentMode !== 'Online') {
+                    onlinePaidInput.value = '0';
+                }
+            }
+
+            if (paymentModeSelect) {
+                paymentModeSelect.addEventListener('change', togglePaymentFields);
+            }
+
+            function validateStockLevels() {
+                clearMessages('stock-error-area');
+                let overallStockValid = true;
+                const currentStock = getData(LS_KEYS.STOCK);
+                const neededQuantities = {};
+                const itemRows = itemsListDiv.querySelectorAll('.item-row');
+                itemRows.forEach(row => {
+                    const errorMsgDiv = row.querySelector('.stock-error-msg');
+                    if (errorMsgDiv) errorMsgDiv.textContent = '';
+                    row.querySelector('.item-quantity-input')?.classList.remove('invalid');
+                });
+                itemRows.forEach(row => {
+                    const code = row.querySelector('.item-code-hidden')?.value.trim();
+                    const quantity = parseInt(row.querySelector('.item-quantity-input')?.value || 0);
+                    if (code && quantity > 0) {
+                        neededQuantities[code] = (neededQuantities[code] || 0) + quantity;
+                    }
+                });
+                for (const code in neededQuantities) {
+                    const needed = neededQuantities[code];
+                    const stockItem = currentStock.find(item => item.code === code);
+                    if (!stockItem) {
+                        showMessage('warning', `Item code ${code} not found in stock. Cannot validate quantity.`, 'stock-error-area', true, 'stock-warn');
+                    } else {
+                        let availableNow = stockItem.quantity;
+                        const editingId = editingBillIdInput.value;
+                        if (editingId) {
+                            const originalItem = originalBillItems.find(item => item.code === code);
+                            if (originalItem) { availableNow += originalItem.quantity; }
+                        }
+                        if (availableNow < needed) {
+                            const shortfall = needed - availableNow;
+                            const errorMsg = `Insufficient stock for ${stockItem.name} (${code}). Available Now: ${availableNow} (Stored: ${stockItem.quantity}), Needed: ${needed}`;
+                            showMessage('error', errorMsg, 'stock-error-area', true, 'stock-err');
+                            overallStockValid = false;
+                            itemRows.forEach(row => {
+                                if (row.querySelector('.item-code-hidden')?.value === code) {
+                                    const itemErrorDiv = row.querySelector('.stock-error-msg');
+                                    if (itemErrorDiv) itemErrorDiv.textContent = `(Avail: ${availableNow})`;
+                                    row.querySelector('.item-quantity-input')?.classList.add('invalid');
+                                }
+                            });
+                        }
+                    }
+                }
+                if (saveBillBtn) {
+                    saveBillBtn.disabled = !overallStockValid;
+                    saveBillBtn.title = overallStockValid ? (editingBillIdInput.value ? 'Update this bill' : 'Save the bill') : 'Cannot save/update due to insufficient stock or errors.';
+                }
+                return overallStockValid;
+            }
+
+            if (billingForm) {
+                billingForm.addEventListener('reset', (e) => {
+                    if (editingBillIdInput.value) {
+                        e.preventDefault();
+                        loadBillForEditing(editingBillIdInput.value);
+                        showMessage('info', 'Edit form reset to original bill data.');
+                    } else {
+                        setTimeout(() => {
+                            itemsListDiv.innerHTML = '';
+                            addBillItemRow();
+                            calculateTotals();
+                            clearMessages();
+                            clearMessages('stock-error-area');
+                            validateStockLevels();
+                            paymentModeSelect.value = '';
+                            cashPaidInput.value = '0';
+                            onlinePaidInput.value = '0';
+                            togglePaymentFields();
+                            const billDateInput = document.getElementById('bill_date');
+                            if (billDateInput) billDateInput.valueAsDate = new Date();
+                            // Clear customer specific fields on a full reset of a new bill form
+                            customerNameInput.value = '';
+                            customerMobileInput.value = '';
+                            carNameInput.value = '';
+                            numberPlateInput.value = '';
+
+                        }, 10);
+                    }
+                });
+            }
+
+            function populatePdfPreview() {
+                if (!billingForm.checkValidity()) {
+                    showMessage('error', 'Fill required fields (*).');
+                    const firstInvalid = billingForm.querySelector(':invalid');
+                    if (firstInvalid) firstInvalid.focus();
+                    return false;
+                }
+                if (!validateStockLevels()) {
+                    showMessage('error', 'Cannot generate PDF due to stock issues.');
+                    return false;
+                }
+
+                const customerName = document.getElementById('customer_name').value.trim();
+                const customerMobile = document.getElementById('customer_mobile').value.trim();
+                const billDateRaw = document.getElementById('bill_date').value;
+                const billDate = billDateRaw ? new Date(billDateRaw).toLocaleDateString('en-IN') : 'N/A';
+                const carName = document.getElementById('car_name').value.trim();
+                const numberPlate = document.getElementById('number_plate').value.trim().toUpperCase();
+                const serviceDetails = document.getElementById('service_details').value.trim() || 'None';
+                const labourCost = parseFloat(labourCostInput.value || 0);
+                const paymentMode = paymentModeSelect.value;
+                const cashPaidValue = document.getElementById('cash_paid').value.trim();
+                const cashPaidRaw = cashPaidValue ? parseFloat(cashPaidValue) : 0;
+                const validCashPaid = (isNaN(cashPaidRaw) || cashPaidRaw < 0) ? 0 : cashPaidRaw;
+                const onlinePaidValue = document.getElementById('online_paid').value.trim();
+                const onlinePaidRaw = onlinePaidValue ? parseFloat(onlinePaidValue) : 0;
+                const validOnlinePaid = (isNaN(onlinePaidRaw) || onlinePaidRaw < 0) ? 0 : onlinePaidRaw;
+                const itemsSubtotal = parseFloat(itemsSubtotalSpan.textContent || 0);
+                const totalAmount = parseFloat(totalAmountSpan.textContent || 0);
+
+                const billItems = [];
+                itemsListDiv.querySelectorAll('.item-row').forEach(row => {
+                    const nameInput = row.querySelector('.item-name-input')?.value.trim();
+                    const quantity = parseInt(row.querySelector('.item-quantity-input')?.value || 0);
+                    const price = parseFloat(row.querySelector('.item-price-input')?.value || 0);
+                    const cleanName = row.querySelector('.item-clean-name-hidden')?.value.trim() || nameInput;
+                    if (nameInput && quantity > 0 && price >= 0) {
+                        billItems.push({ name: cleanName, quantity, price: price.toFixed(2), amount: (quantity * price).toFixed(2) });
+                    }
+                });
+
+                document.getElementById('preview-customer').textContent = customerName;
+                document.getElementById('preview-mobile').textContent = customerMobile || 'N/A';
+                document.getElementById('preview-date').textContent = billDate;
+                document.getElementById('preview-vehicle').textContent = carName;
+                document.getElementById('preview-plate').textContent = numberPlate;
+                document.getElementById('preview-service').textContent = serviceDetails;
+                document.getElementById('preview-payment').textContent = paymentMode;
+                document.getElementById('preview-cash').textContent = validCashPaid.toFixed(2);
+                document.getElementById('preview-online').textContent = validOnlinePaid.toFixed(2);
+                document.getElementById('preview-labour').textContent = labourCost.toFixed(2);
+                document.getElementById('preview-subtotal').textContent = itemsSubtotal.toFixed(2);
+                document.getElementById('preview-total').textContent = totalAmount.toFixed(2);
+
+                const previewItemsTbody = document.getElementById('preview-items');
+                previewItemsTbody.innerHTML = '';
+                billItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td style="text-align: right;">${item.quantity}</td>
+                        <td style="text-align: right;">${item.price}</td>
+                        <td style="text-align: right;">${item.amount}</td>`;
+                    previewItemsTbody.appendChild(row);
+                });
+
+                return true;
+            }
+
+            function generatePDF(download = false) {
+                clearMessages('pdf-modal-message-area');
+                const customerName = document.getElementById('customer_name').value.trim();
+                const customerMobile = document.getElementById('customer_mobile').value.trim();
+                const billDateRaw = document.getElementById('bill_date').value;
+                const billDate = billDateRaw ? new Date(billDateRaw).toLocaleDateString('en-IN') : 'N/A';
+                const carName = document.getElementById('car_name').value.trim();
+                const numberPlate = document.getElementById('number_plate').value.trim().toUpperCase();
+                const serviceDetails = document.getElementById('service_details').value.trim();
+                const labourCost = parseFloat(labourCostInput.value || 0);
+                const paymentMode = paymentModeSelect.value;
+                const cashPaidValue = document.getElementById('cash_paid').value.trim();
+                const cashPaidRaw = cashPaidValue ? parseFloat(cashPaidValue) : 0;
+                const validCashPaid = (isNaN(cashPaidRaw) || cashPaidRaw < 0) ? 0 : cashPaidRaw;
+                const onlinePaidValue = document.getElementById('online_paid').value.trim();
+                const onlinePaidRaw = onlinePaidValue ? parseFloat(onlinePaidValue) : 0;
+                const validOnlinePaid = (isNaN(onlinePaidRaw) || onlinePaidRaw < 0) ? 0 : onlinePaidRaw;
+                const itemsSubtotal = parseFloat(itemsSubtotalSpan.textContent || 0);
+                const totalAmount = labourCost + itemsSubtotal;
+
+                const workshopName = document.getElementById('workshop-name').value.trim() || 'Your Workshop Name';
+                const workshopAddress = document.getElementById('workshop-address').value.trim() || 'Your Workshop Address, City, State';
+                const workshopAddress2 = document.getElementById('workshop-address2').value.trim() || 'Your Workshop Address, City, State';
+                const workshopPhone = document.getElementById('workshop-phone').value.trim() || '+91-XXXXXXXXXX';
+                const workshopEmail = document.getElementById('workshop-email').value.trim() || 'your@email.com';
+                const pdfNotes = document.getElementById('pdf-notes').value.trim();
+
+                const billItems = [];
+                itemsListDiv.querySelectorAll('.item-row').forEach(row => {
+                    const nameInput = row.querySelector('.item-name-input')?.value.trim();
+                    const quantity = parseInt(row.querySelector('.item-quantity-input')?.value || 0);
+                    const price = parseFloat(row.querySelector('.item-price-input')?.value || 0);
+                    const cleanName = row.querySelector('.item-clean-name-hidden')?.value.trim() || nameInput;
+                    if (nameInput && quantity > 0 && price >= 0) {
+                        billItems.push({ name: cleanName, quantity: quantity, price: price.toFixed(2), amount: (quantity * price).toFixed(2) });
+                    }
+                });
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 10;
+                let currentY = margin;
+
+                function drawPageDecorations() {
+                    doc.setFillColor(52, 152, 219);
+                    doc.rect(0, 0, pageWidth, 10, 'F');
+                    doc.setFillColor(52, 152, 219);
+                    doc.rect(0, pageHeight - 5, pageWidth, 5, 'F');
+                    doc.setDrawColor(52, 152, 219);
+                    doc.setLineWidth(0.5);
+                    doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin - 5, 'S');
+                    doc.setFontSize(8);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('', pageWidth / 2, pageHeight - 2, { align: 'center' });
+                }
+
+                drawPageDecorations();
+
+                const logoPath = 'https://res.cloudinary.com/dqqzpvrkw/image/upload/v1744718602/24x24_OZON-1_wef9pj.png';
+                const img = new Image();
+                img.crossOrigin = "Anonymous"; // Important for Cloudinary or other CORS-enabled image sources
+                img.src = logoPath;
+                
+                const generatePDFContentWithPossibleLogo = () => {
+                    currentY = margin; // Reset Y for content generation
+                     if (img.complete && img.naturalWidth !== 0) { // Check if logo loaded
+                        try {
+                            doc.addImage(img, 'PNG', margin + 5, currentY + 5, 30, 30); // Adjusted logo size and position
+                            currentY += 10; // Adjust Y based on logo space
+                        } catch (e) {
+                            console.error("Error adding image to PDF:", e);
+                            // No currentY adjustment here as logo failed
+                        }
+                    } else {
+                         // No currentY adjustment here if logo didn't load
+                    }
+                    // Regardless of logo, proceed to generate text content, potentially shifting its startY
+                    currentY = Math.max(currentY, margin + 5 + 30 + 5); // Ensure currentY is below where logo would be
+
+                    doc.setFontSize(20);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(52, 152, 219);
+                    doc.text('INVOICE', pageWidth / 2, margin + 15, { align: 'center' }); // Fixed Y for title
+
+                    currentY = margin + 25; // Start text content below title
+
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(workshopName, pageWidth - margin - 5, currentY, { align: 'right' });
+                    currentY += 5;
+                    doc.text(workshopAddress, pageWidth - margin - 5, currentY, { align: 'right' });
+                    currentY += 5;
+                     if (workshopAddress2) {
+                        doc.text(workshopAddress2, pageWidth - margin - 5, currentY, { align: 'right' });
+                        currentY += 5;
+                    }
+                    doc.text(`Phone: ${workshopPhone}`, pageWidth - margin - 5, currentY, { align: 'right' });
+                    currentY += 5;
+                    doc.text(`Email: ${workshopEmail}`, pageWidth - margin - 5, currentY, { align: 'right' });
+                    
+                    // Reset Y for left-aligned customer details to avoid overlap with right-aligned workshop details
+                    let leftColumnY = margin + 35; // Start customer details slightly lower if logo is present
+
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Bill To:', margin + 5, leftColumnY);
+                    leftColumnY += 6;
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(customerName, margin + 5, leftColumnY);
+                    leftColumnY += 6;
+                     if (customerMobile) {
+                        doc.text(`Mobile: ${customerMobile}`, margin + 5, leftColumnY);
+                        leftColumnY += 6;
+                    }
+                    doc.text(`Bill Date: ${billDate}`, margin + 5, leftColumnY);
+                    leftColumnY += 6;
+                    const billIdToDisplay = editingBillIdInput.value || `DRAFT-${generateId()}`;
+                    doc.text(`Bill ID: ${billIdToDisplay}`, margin + 5, leftColumnY);
+                    leftColumnY += 8;
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Vehicle Details:', margin + 5, leftColumnY);
+                    leftColumnY += 6;
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Model: ${carName}`, margin + 5, leftColumnY);
+                    leftColumnY += 6;
+                    doc.text(`Reg No: ${numberPlate}`, margin + 5, leftColumnY);
+                    
+                    currentY = Math.max(currentY, leftColumnY) + 10; // Ensure currentY is below both columns
+
+                    doc.setDrawColor(200);
+                    doc.setLineWidth(0.3);
+                    doc.line(margin + 5, currentY - 4, pageWidth - margin - 5, currentY - 4);
+                    // currentY += 8; // Already has spacing from Math.max
+
+                    doc.setFontSize(10);
+                    const tableHeaders = [['Item Description', 'Qty', 'Rate (Rs)', 'Amount (Rs)']]; // Typo fixed
+                    const tableBody = billItems.map(item => [item.name, item.quantity, item.price, item.amount]);
+                    doc.autoTable({
+                        head: tableHeaders,
+                        body: tableBody,
+                        startY: currentY,
+                        theme: 'grid',
+                        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+                        styles: { fontSize: 9, cellPadding: 2, textColor: 0 }, // Reduced cellPadding
+                        columnStyles: {
+                            0: { cellWidth: 'auto' },
+                            1: { cellWidth: 15, halign: 'right' }, // Adjusted widths
+                            2: { cellWidth: 25, halign: 'right' },
+                            3: { cellWidth: 25, halign: 'right' }
+                        },
+                        margin: { left: margin + 5, right: margin + 5 },
+                        didDrawPage: (data) => { // Use didDrawPage for subsequent pages
+                            if (data.pageNumber > 1) { // Only draw decorations on subsequent pages
+                                drawPageDecorations();
+                            }
+                        }
+                    });
+                    currentY = doc.lastAutoTable.finalY + 10;
+
+                    if (serviceDetails) {
+                        if (currentY > pageHeight - 50) { doc.addPage(); drawPageDecorations(); currentY = margin + 15; }
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Service Details / Notes:', margin + 5, currentY);
+                        currentY += 5;
+                        doc.setFont('helvetica', 'normal');
+                        const splitDetails = doc.splitTextToSize(serviceDetails, pageWidth - (margin + 5) * 2);
+                        doc.text(splitDetails, margin + 5, currentY);
+                        currentY += splitDetails.length * 4 + 5; // Adjusted line height
+                    }
+
+                    if (pdfNotes) {
+                        if (currentY > pageHeight - 50) { doc.addPage(); drawPageDecorations(); currentY = margin + 15; }
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Additional Notes:', margin + 5, currentY);
+                        currentY += 5;
+                        doc.setFont('helvetica', 'normal');
+                        const splitNotes = doc.splitTextToSize(pdfNotes, pageWidth - (margin + 5) * 2);
+                        doc.text(splitNotes, margin + 5, currentY);
+                        currentY += splitNotes.length * 4 + 5; // Adjusted line height
+                    }
+
+                    const totalsStartX = pageWidth - margin - 5 - 60; // X position for "Labour Cost:" text
+                    const valuesX = pageWidth - margin - 5; // X position for amounts (right aligned)
+
+                    if (currentY > pageHeight - 60) { doc.addPage(); drawPageDecorations(); currentY = margin + 15; }
+                    
+                    doc.setFontSize(10);
+                    if (labourCost > 0) {
+                        doc.text('Labour Cost:', totalsStartX, currentY, {align: 'left'});
+                        doc.text(` ${labourCost.toFixed(2)}`, valuesX, currentY, { align: 'right' });
+                        currentY += 6;
+                    }
+                    doc.text('Items Subtotal:', totalsStartX, currentY, {align: 'left'});
+                    doc.text(` ${itemsSubtotal.toFixed(2)}`, valuesX, currentY, { align: 'right' });
+                    currentY += 4;
+                    doc.setLineWidth(0.3);
+                    doc.line(totalsStartX, currentY, valuesX, currentY);
+                    currentY += 6;
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Total Amount:', totalsStartX, currentY, {align: 'left'});
+                    doc.text(` ${totalAmount.toFixed(2)}`, valuesX, currentY, { align: 'right' });
+                    currentY += 10;
+                    
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Payment Mode: ${paymentMode}`, margin + 5, currentY); // Moved payment details to left
+                    currentY += 6;
+                    if (paymentMode === "Cash" || paymentMode === "Cash and Online") {
+                         if(validCashPaid > 0 || paymentMode === "Cash"){ // Show if cash paid or if mode is only cash
+                            doc.text(`Cash Paid:  ${validCashPaid.toFixed(2)}`, margin + 5, currentY);
+                            currentY += 6;
+                         }
+                    }
+                    if (paymentMode === "Online" || paymentMode === "Cash and Online") {
+                        if(validOnlinePaid > 0 || paymentMode === "Online"){ // Show if online paid or if mode is only online
+                           doc.text(`Online Paid:  ${validOnlinePaid.toFixed(2)}`, margin + 5, currentY);
+                           currentY += 6;
+                        }
+                    }
+
+                    const totalPaid = validCashPaid + validOnlinePaid;
+                    if (paymentMode === 'Credit' || (totalAmount > totalPaid && paymentMode !== 'Credit')) {
+                         const balance = totalAmount - totalPaid;
+                         doc.setFont('helvetica', 'bold');
+                         doc.text(`Balance Due:  ${balance.toFixed(2)}`, margin + 5, currentY);
+                         currentY += 6;
+                    }
+
+
+                    if (currentY > pageHeight - 25) { doc.addPage(); drawPageDecorations(); currentY = margin + 15; } // Check for footer space
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'italic');
+                    doc.setTextColor(100);
+                    doc.text('Thank you for your business!', pageWidth / 2, pageHeight - 15, { align: 'center' });
+
+
+                    if (download) {
+                        doc.save(`Bill_${billIdToDisplay}_${customerName.replace(/\s+/g, '_')}.pdf`);
+                    } else {
+                        doc.output('dataurlnewwindow');
+                    }
+                }
+
+                if (img.complete && img.naturalWidth !== 0) { // If image already loaded (e.g. cached)
+                    generatePDFContentWithPossibleLogo();
+                } else {
+                    img.onload = generatePDFContentWithPossibleLogo;
+                    img.onerror = function() {
+                        console.error("Failed to load logo image for PDF.");
+                        showMessage('warning', 'Logo could not be loaded for PDF.', 'pdf-modal-message-area');
+                        generatePDFContentWithPossibleLogo(); // Proceed without logo
+                    };
+                }
+            }
+
+
+            if (generatePdfBtn) { 
+                generatePdfBtn.addEventListener('click', () => {
+                    if (populatePdfPreview()) {
+                        openModal('pdf-preview-modal');
+                    }
+                }); 
+            }
+
+            if (downloadPdfBtn) {
+                downloadPdfBtn.addEventListener('click', () => {
+                    generatePDF(true);
+                    closeModal('pdf-preview-modal');
+                });
+            }
+
+            if (viewPdfBtn) {
+                viewPdfBtn.addEventListener('click', () => {
+                    generatePDF(false);
+                    // Keep modal open for further actions like download, or close it:
+                    // closeModal('pdf-preview-modal'); 
+                });
+            }
+
+            if (billingForm) {
+                billingForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    clearMessages();
+                    clearMessages('stock-error-area');
+                    const editingId = editingBillIdInput.value;
+                    if (!validateStockLevels()) {
+                        showMessage('error', `Cannot ${editingId ? 'update' : 'save'} bill. Resolve stock issues.`, 'message-area');
+                        return;
+                    }
+                    if (!billingForm.checkValidity()) {
+                        showMessage('error', 'Fill required fields (*).');
+                        const firstInvalid = billingForm.querySelector(':invalid');
+                        if (firstInvalid) firstInvalid.focus();
+                        return;
+                    }
+
+                    const paymentMode = paymentModeSelect.value;
+                    calculateTotals(); // Ensure totals are fresh before getting them
+                    const totalAmount = parseFloat(totalAmountSpan.textContent || 0);
+                    const itemsSubtotal = parseFloat(itemsSubtotalSpan.textContent || 0);
+                    const cashPaidValue = document.getElementById('cash_paid').value.trim();
+                    const cashPaidRaw = cashPaidValue ? parseFloat(cashPaidValue) : 0;
+                    const cashPaid = (isNaN(cashPaidRaw) || cashPaidRaw < 0) ? 0 : cashPaidRaw;
+                    const onlinePaidValue = document.getElementById('online_paid').value.trim();
+                    const onlinePaidRaw = onlinePaidValue ? parseFloat(onlinePaidValue) : 0;
+                    const onlinePaid = (isNaN(onlinePaidRaw) || onlinePaidRaw < 0) ? 0 : onlinePaidRaw;
+                    const totalPaid = cashPaid + onlinePaid;
+                    
+                    if (paymentMode !== 'Credit' && totalPaid > totalAmount) {
+                        if (!confirm(`Warning: Total Paid (Cash: ${cashPaid.toFixed(2)} + Online: ${onlinePaid.toFixed(2)} = ${totalPaid.toFixed(2)}) exceeds Total Amount (${totalAmount.toFixed(2)}). Save anyway?`)) {
+                            if (paymentMode === 'Cash and Online' && onlinePaidInput.value !== '' && parseFloat(onlinePaidInput.value) > 0) { // Heuristic: focus on potentially incorrect field
+                                onlinePaidInput.focus();
+                            } else {
+                                cashPaidInput.focus();
+                            }
+                            return;
+                        }
+                    }
+                    if (paymentMode === 'Cash and Online' && totalPaid === 0) { // totalPaid is sum of cash and online
+                        showMessage('error', 'For "Cash and Online" payment mode, at least one of Cash Paid or Online Paid must be greater than 0.');
+                        cashPaidInput.focus(); // Or onlinePaidInput, depending on your preference
+                        return;
+                    }
+                     // For "Credit" mode, paid amounts should ideally be 0 or less than total.
+                    if (paymentMode === 'Credit' && totalPaid >= totalAmount && totalPaid > 0) {
+                        if (!confirm(`Payment mode is "Credit/Due", but total paid (${totalPaid.toFixed(2)}) seems to cover the total amount (${totalAmount.toFixed(2)}). Consider changing payment mode. Save anyway?`)) {
+                            paymentModeSelect.focus();
+                            return;
+                        }
+                    }
+
+
+                    const currentBillData = {
+                        billId: editingId || generateId('BILL'),
+                        customerName: document.getElementById('customer_name').value.trim(),
+                        customerMobile: document.getElementById('customer_mobile').value.trim(),
+                        billDate: document.getElementById('bill_date').value,
+                        carName: document.getElementById('car_name').value.trim(),
+                        numberPlate: document.getElementById('number_plate').value.trim().toUpperCase(),
+                        serviceDetails: document.getElementById('service_details').value.trim(),
+                        labourCost: parseFloat(labourCostInput.value || 0),
+                        paymentMode: paymentMode,
+                        cashPaid: cashPaid,
+                        onlinePaid: onlinePaid,
+                        items: [],
+                        itemsSubtotal: itemsSubtotal,
+                        totalAmount: totalAmount, // This is grand total (labour + items)
+                        createdAt: editingId ? (getData(LS_KEYS.BILLS).find(b => b.billId === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+
+                    const currentItemsMap = {};
+                    itemsListDiv.querySelectorAll('.item-row').forEach(row => {
+                        const nameInput = row.querySelector('.item-name-input')?.value.trim();
+                        const quantity = parseInt(row.querySelector('.item-quantity-input')?.value || 0);
+                        const price = parseFloat(row.querySelector('.item-price-input')?.value || 0);
+                        const code = row.querySelector('.item-code-hidden')?.value.trim();
+                        const cleanName = row.querySelector('.item-clean-name-hidden')?.value.trim() || nameInput;
+                        if (nameInput && quantity > 0 && price >= 0) {
+                            currentBillData.items.push({ name: cleanName, code, quantity, price });
+                            if (code) { currentItemsMap[code] = (currentItemsMap[code] || 0) + quantity; }
+                        }
+                    });
+
+                    // Stock update logic
+                    let stock = getData(LS_KEYS.STOCK);
+                    const stockAdjustments = {};
+                    if (editingId) { // If editing, calculate differences from original bill items
+                        originalBillItems.forEach(origItem => {
+                            if (origItem.code) { stockAdjustments[origItem.code] = (stockAdjustments[origItem.code] || 0) + origItem.quantity; }
+                        });
+                        currentBillData.items.forEach(currItem => {
+                            if (currItem.code) { stockAdjustments[currItem.code] = (stockAdjustments[currItem.code] || 0) - currItem.quantity; }
+                        });
+                    } else { // If new bill, just deduct current items
+                        currentBillData.items.forEach(currItem => {
+                            if (currItem.code) { stockAdjustments[currItem.code] = (stockAdjustments[currItem.code] || 0) - currItem.quantity; }
+                        });
+                    }
+                    let stockUpdateError = false;
+                    for (const code in stockAdjustments) {
+                        const change = stockAdjustments[code]; // Positive for adding back to stock, negative for deducting
+                        if (change === 0) continue;
+                        const stockIndex = stock.findIndex(s => s.code === code);
+                        if (stockIndex > -1) {
+                            const originalQty = stock[stockIndex].quantity;
+                            const newQty = originalQty + change; // For new bill, change is negative, so it deducts. For edits, it's a delta.
+                            if (newQty < 0) {
+                                showMessage('error', `Stock update error for ${stock[stockIndex].name} (${code}). Not enough stock (${originalQty}) to apply change (${change}). Bill not saved.`, 'message-area', true);
+                                stockUpdateError = true;
+                                break;
+                            }
+                            stock[stockIndex].quantity = newQty;
+                        } else if (change < 0) { // Trying to deduct from a non-existent stock item (e.g. custom item not in stock list)
+                             showMessage('warning', `Stock item ${code} (being sold) not found in stock records. Quantity cannot be updated.`, 'message-area');
+                        }
+                        // If change > 0 (adding back) and item not found, it's an anomaly, but we don't block.
+                    }
+                    if (stockUpdateError) { return; }
+                    setData(LS_KEYS.STOCK, stock);
+                    populateStockDatalist(); // Refresh stock datalist after update
+
+                    // Bill saving logic
+                    let bills = getData(LS_KEYS.BILLS);
+                    if (editingId) {
+                        const billIndex = bills.findIndex(b => b.billId === editingId);
+                        if (billIndex > -1) { 
+                            bills[billIndex] = currentBillData; 
+                        } else { // Should not happen if loaded correctly
+                            bills.push(currentBillData);
+                            showMessage('warning', 'Original bill not found for update, created as new.', 'message-area');
+                        }
+                    } else {
+                        bills.push(currentBillData);
+                    }
+                    setData(LS_KEYS.BILLS, bills);
+
+                    // Customer data saving/updating logic (NEW)
+                    const submittedCustomerName = currentBillData.customerName;
+                    if (submittedCustomerName) { // Only save/update if a customer name was provided
+                        let customers = getData(LS_KEYS.CUSTOMERS);
+                        const customerIndex = customers.findIndex(c => c.name.toLowerCase() === submittedCustomerName.toLowerCase());
+
+                        const customerDetailsToSave = {
+                            name: submittedCustomerName,
+                            mobile: currentBillData.customerMobile,
+                            lastKnownCarName: currentBillData.carName,
+                            lastKnownNumberPlate: currentBillData.numberPlate
+                            // Add more fields here if needed in the future e.g., address
+                        };
+
+                        if (customerIndex > -1) {
+                            // Update existing customer, merging to preserve other potential fields
+                            customers[customerIndex] = { ...customers[customerIndex], ...customerDetailsToSave };
+                        } else {
+                            // Add new customer
+                            customers.push(customerDetailsToSave);
+                        }
+                        setData(LS_KEYS.CUSTOMERS, customers);
+                        populateCustomerDatalist(); // Refresh customer datalist
+                    }
+
+                    const actionVerb = editingId ? 'updated' : 'created';
+                    const successMsg = encodeURIComponent(`Bill ${currentBillData.billId} for ${currentBillData.customerName} ${actionVerb} successfully! Stock and customer data updated.`);
+                    window.location.href = `view_bills.html?msgType=success&msg=${successMsg}`;
+                });
+            }
+
+            function loadBillForEditing(billId) {
+                const bills = getData(LS_KEYS.BILLS);
+                const billToEdit = bills.find(b => b.billId === billId);
+                if (!billToEdit) {
+                    showMessage('error', `Bill ID ${billId} not found.`);
+                    window.location.href = 'view_bills.html';
+                    return;
+                }
+                originalBillItems = JSON.parse(JSON.stringify(billToEdit.items || [])); // Deep copy
+                editingBillIdInput.value = billToEdit.billId;
+                pageTitleElement.textContent = `Edit Bill / Invoice (ID: ${billToEdit.billId})`;
+                if (documentTitleElement) documentTitleElement.textContent = `Edit Bill ${billToEdit.billId}`;
+                saveBillBtn.innerHTML = '<i class="fas fa-save"></i> Update Bill'; // Changed from textContent to innerHTML for icon
+                editModeIndicator.classList.remove('hidden');
+                
+                customerNameInput.value = billToEdit.customerName || '';
+                customerMobileInput.value = billToEdit.customerMobile || '';
+                document.getElementById('bill_date').value = billToEdit.billDate || '';
+                carNameInput.value = billToEdit.carName || '';
+                numberPlateInput.value = billToEdit.numberPlate || '';
+                document.getElementById('service_details').value = billToEdit.serviceDetails || '';
+                labourCostInput.value = billToEdit.labourCost || 0;
+                paymentModeSelect.value = billToEdit.paymentMode || '';
+                cashPaidInput.value = billToEdit.cashPaid != null ? billToEdit.cashPaid : '0';
+                onlinePaidInput.value = billToEdit.onlinePaid != null ? billToEdit.onlinePaid : '0';
+                
+                togglePaymentFields();
+                itemsListDiv.innerHTML = '';
+                (billToEdit.items || []).forEach(item => { addBillItemRow(item); });
+                if (itemsListDiv.children.length === 0) { addBillItemRow(); } // Ensure at least one item row if bill had no items
+                
+                calculateTotals();
+                validateStockLevels(); // Validate stock after loading, considering original items
+            }
+
+            // Initializations
+            populateStockDatalist();
+            populateCustomerDatalist(); // New: populate customer list on load
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('editId');
+            if (editId) { 
+                loadBillForEditing(editId); 
+            } else { // For new bill
+                addBillItemRow(); // Add one empty item row
+                calculateTotals();
+                validateStockLevels(); // Initial validation
+                togglePaymentFields();
+                const billDateInput = document.getElementById('bill_date');
+                if (billDateInput && !billDateInput.value) { 
+                    billDateInput.valueAsDate = new Date(); 
+                }
+            }
+
+            if (logoutLink) { 
+                logoutLink.addEventListener('click', (e) => { 
+                    e.preventDefault(); 
+                    handleLogout(); 
+                }); 
+            }
+        });
+    </script>
+</body>
+</html>
